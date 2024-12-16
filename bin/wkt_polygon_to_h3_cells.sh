@@ -16,10 +16,15 @@
 
 ## Function to display usage information
 usage() {
-    echo "Usage: $0 -i INPUT -o OUTPUT [-r RESOLUTION] [-t THREADS] [-m MEMORY] [-x TEMP_DIR]"
+    echo "Usage: $0 -i INPUT -o OUTPUT [-r RESOLUTION] [-a ALGORITHM] [-c CONTAINMENT] [-t THREADS] [-m MEMORY] [-x TEMP_DIR]"
     echo "  -i INPUT          : Input directory containing Parquet files"
     echo "  -o OUTPUT         : Output Parquet file path"
     echo "  -r H3_RESOLUTION  : H3 resolution (e.g., 4)"
+    echo "  -a ALGORITHM      : Algorithm to use ('standard' or 'experimental', default: 'experimental')"
+    echo "  -c CONTAINMENT    : Containment type for experimental algorithm"
+    echo "                      (CONTAINMENT_CENTER, CONTAINMENT_FULL,"
+    echo "                       CONTAINMENT_OVERLAPPING, CONTAINMENT_OVERLAPPING_BBOX)"
+    echo "                      (default: CONTAINMENT_OVERLAPPING)"
     echo "  -t THREADS        : Number of CPU threads to use (optional)"
     echo "  -m MEMORY         : Memory limit (e.g., '100GB') (optional)"
     echo "  -x TEMP_DIR       : Temporary directory path (optional)"
@@ -31,17 +36,21 @@ usage() {
 INPUT=""
 OUTPUT=""
 H3_RESOLUTION=""
+ALGORITHM="experimental"
+CONTAINMENT="CONTAINMENT_OVERLAPPING"
 THREADS=""
 MEMORY=""
 TEMP_DIR=""
 EXT_DIR=""
 
 ## Parse command-line options
-while getopts "i:o:r:t:m:x:e" opt; do
+while getopts "i:o:r:a:c:t:m:x:e" opt; do
     case $opt in
         i) INPUT="$OPTARG" ;;
         o) OUTPUT="$OPTARG" ;;
         r) H3_RESOLUTION="$OPTARG" ;;
+        a) ALGORITHM="$OPTARG" ;;
+        c) CONTAINMENT="$OPTARG" ;;
         t) THREADS="$OPTARG" ;;
         m) MEMORY="$OPTARG" ;;
         x) TEMP_DIR="$OPTARG" ;;
@@ -150,7 +159,14 @@ COPY polygons(wkt) FROM '${INPUT}' (
 -- Convert WKT to H3 cells and save unique cells to CSV
 COPY (
     SELECT DISTINCT
-        UNNEST(h3_polygon_wkt_to_cells_string(wkt, ${H3_RESOLUTION})) AS h3_cell
+        UNNEST("
+if [[ "$ALGORITHM" == "standard" ]]; then
+    SQL_COMMAND+="h3_polygon_wkt_to_cells_string(wkt, ${H3_RESOLUTION})"
+else
+    SQL_COMMAND+="h3_polygon_wkt_to_cells_experimental_string(wkt, '${CONTAINMENT}', ${H3_RESOLUTION})"
+fi
+SQL_COMMAND+="
+        ) AS h3_cell
     FROM polygons
     ORDER BY h3_cell
 ) TO '${OUTPUT}' (HEADER, DELIMITER ',');
@@ -159,6 +175,7 @@ COPY (
 -- SELECT 
 --     ROW_NUMBER() OVER () as polygon_id,
 --     ARRAY_LENGTH(h3_polygon_wkt_to_cells_string(wkt, ${H3_RESOLUTION})) as cell_count
+--     ARRAY_LENGTH(h3_polygon_wkt_to_cells_experimental_string(wkt, '${CONTAINMENT}', ${H3_RESOLUTION})) as cell_count_experimental
 -- FROM polygons;
 
 -- Clean up
@@ -169,4 +186,5 @@ DROP TABLE polygons;
 echo -e "\nExecuting DuckDB command"
 
 duckdb -c "${SQL_COMMAND}"
+# duckdb -unsigned -c "${SQL_COMMAND}"
 
