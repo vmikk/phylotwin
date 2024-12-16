@@ -1,4 +1,18 @@
 #!/bin/bash
+
+## Function to display usage information
+usage() {
+    echo "Usage: $0 -i INPUT -o OUTPUT [-r RESOLUTION] [-t THREADS] [-m MEMORY] [-x TEMP_DIR]"
+    echo "  -i INPUT          : Input directory containing Parquet files"
+    echo "  -o OUTPUT         : Output Parquet file path"
+    echo "  -r H3_RESOLUTION  : H3 resolution (e.g., 4)"
+    echo "  -t THREADS        : Number of CPU threads to use (optional)"
+    echo "  -m MEMORY         : Memory limit (e.g., '100GB') (optional)"
+    echo "  -x TEMP_DIR       : Temporary directory path (optional)"
+    echo "  -e EXT_DIR        : DuckDB extensions directory path (optional)"
+    exit 1
+}
+
 INPUT=""
 OUTPUT=""
 H3_RESOLUTION=""
