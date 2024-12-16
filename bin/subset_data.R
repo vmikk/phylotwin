@@ -58,6 +58,9 @@ opt <- parse_args(OptionParser(option_list = option_list))
 
 if(!is.na(opt$country)){
   ## December 2024: 249 current officially assigned ISO 3166-1 alpha-2 codes
+  ## In Natural Earth v.5.1.2, there are 237 ISO-A2 codes
+  ## ++ see https://www.statoids.com/wab.html
+
   valid_countries <- c(
     "AD", "AE", "AF", "AG", "AI", "AL", "AM", "AO", "AQ", "AR", "AS", "AT", "AU", "AW", "AX", "AZ", 
     "BA", "BB", "BD", "BE", "BF", "BG", "BH", "BI", "BJ", "BL", "BM", "BN", "BO", "BQ", "BR", "BS", "BT", "BV", "BW", "BY", "BZ", 
@@ -78,7 +81,17 @@ if(!is.na(opt$country)){
     "SA", "SB", "SC", "SD", "SE", "SG", "SH", "SI", "SJ", "SK", "SL", "SM", "SN", "SO", "SR", "SS", "ST", "SV", "SX", "SY", "SZ", 
     "TC", "TD", "TF", "TG", "TH", "TJ", "TK", "TL", "TM", "TN", "TO", "TR", "TT", "TV", "TW", "TZ", 
     "UA", "UG", "UM", "US", "UY", "UZ", "VA", "VC", "VE", "VG", "VI", "VN", "VU", 
-    "WF", "WS", "YE", "YT", "ZA", "ZM", "ZW")
+    "WF", "WS", "XK", "YE", "YT", "ZA", "ZM", "ZW")
+
+  # valid_countries[ ! valid_countries %in% NE$ISO_A2_EH ]    # not_supported_codes
+  # NE[ ! NE$ISO_A2_EH %in% valid_countries, ]
+
+  ## Codes missing in the Natural Earth data
+  not_supported_codes <- c("BQ", "BV", "CC", "CX", "GF", "GI", "GP", "MQ", "RE", "SJ", "TK", "UM", "YT")
+
+  valid_countries <- setdiff(valid_countries, not_supported_codes)
+
+  ## Check if the country codes are valid
   countries <- toupper(unique(strsplit(x = opt$country, split = ",")[[1]]))
   if(any(! countries %in% valid_countries)){
     cat("The following country codes are not valid: ", 
@@ -87,8 +100,6 @@ if(!is.na(opt$country)){
     stop()
   }
 }
-
-
 
 
 
