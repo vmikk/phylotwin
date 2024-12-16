@@ -79,6 +79,28 @@ if [[ -n "$THREADS" && "$THREADS" -le 0 ]]; then
     usage
 fi
 
+## Validate algorithm
+if [[ "$ALGORITHM" != "standard" && "$ALGORITHM" != "experimental" ]]; then
+    echo -e "Error: Algorithm must be either 'standard' or 'experimental'!\n"
+    usage
+fi
+
+## Validate containment type if using experimental algorithm
+if [[ "$ALGORITHM" == "experimental" ]]; then
+    valid_containment=false
+    for type in "CONTAINMENT_CENTER" "CONTAINMENT_FULL" "CONTAINMENT_OVERLAPPING" "CONTAINMENT_OVERLAPPING_BBOX"; do
+        if [[ "$CONTAINMENT" == "$type" ]]; then
+            valid_containment=true
+            break
+        fi
+    done
+    if [[ "$valid_containment" == false ]]; then
+        echo -e "Error: Invalid containment type for experimental algorithm!\n"
+        usage
+    fi
+fi
+
+
 echo "Counting user-supplied WKT polygons"
 
 ## Count number of polygons
