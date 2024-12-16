@@ -56,6 +56,16 @@ if [[ -n "$THREADS" && "$THREADS" -le 0 ]]; then
     usage
 fi
 
+echo "Counting user-supplied WKT polygons"
+
+## Count number of polygons
+POLYGON_COUNT=$(grep -c "^POLYGON" "${INPUT}")
+NUM_LINES=$(wc -l < "${INPUT}")
+echo "..Number of lines in input file: $NUM_LINES"
+echo "..Number of polygons detected: $POLYGON_COUNT"
+if [ "$POLYGON_COUNT" -ne "$NUM_LINES" ]; then
+    echo -e "WARNING: Number of polygons detected does not match number of lines in input file!\n"
+fi
 
 ## View user-supplied parameters
 echo -e "\nInput parameters:"
