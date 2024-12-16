@@ -1,5 +1,19 @@
 #!/bin/bash
 
+## Convert WKT polygons to H3 cells
+
+## NB. 
+## - Input is a text file with polygons specified in WKT format
+##    Each line is a separate polygon
+##    (MULTIPOLYGONs and POINTs are currently not supported)
+## - Expected CRS is EPSG:4326
+
+## Notes on MULTIPOLYGON:
+# - workaround ST_Dump(geom).unnest(recursive := true) + flaten(list())...
+#   https://github.com/isaacbrodsky/h3-duckdb/issues/118
+
+
+
 ## Function to display usage information
 usage() {
     echo "Usage: $0 -i INPUT -o OUTPUT [-r RESOLUTION] [-t THREADS] [-m MEMORY] [-x TEMP_DIR]"
