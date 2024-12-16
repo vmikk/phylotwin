@@ -93,6 +93,24 @@ DATA <- opt$data
 ## Initialize the grid-cells of interest
 HEXES <- vector(mode = "character")
 
+## Load grid-cells per country 
+if(! is.na(COUNTRY)) {
+
+  cat("Loading grid-cells at country level and the specified H3 resolution\n")
+  COUNTRY <- toupper(unique(strsplit(x = COUNTRY, split = ",")[[1]]))
+  country_path <- file.path(DATA, "Countries_H3", paste0("h3_", RESOLUTION), paste0(COUNTRY, ".txt.gz"))
+  country_h3 <- alply(.data = country_path, .margins = 1, .fun = fread)
+  country_h3 <- rbindlist(country_h3)
+  
+  cat("..number of grid-cell IDs loaded: ", nrow(country_h3))
+
+  COUNTRY_HEXES <- unique(country_h3$h3_cell)
+  rm(country_h3)
+
+  ## Add to the main list of grid-cells
+  HEXES <- c(HEXES, COUNTRY_HEXES)
+}
+
 ## Get grid-cells from a polygon
 if(! is.na(POLYGON)) {
 
