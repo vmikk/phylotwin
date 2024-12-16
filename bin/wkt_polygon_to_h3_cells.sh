@@ -36,6 +36,26 @@ while getopts "i:o:r:t:m:x:e" opt; do
     esac
 done
 
+echo "Validating input parameters"
+
+## Validate input parameters
+if [[ -z "$INPUT" || -z "$OUTPUT" || -z "$H3_RESOLUTION" ]]; then
+    echo -e "Error: Missing required parameters (INPUT, OUTPUT, H3_RESOLUTION)!\n"
+    usage
+fi
+
+## H3 resolution should be an integer between 0 and 15
+if ! [[ "$H3_RESOLUTION" =~ ^[0-9]+$ ]] || [ "$H3_RESOLUTION" -lt 0 ] || [ "$H3_RESOLUTION" -gt 15 ]; then
+    echo -e "Error: H3 resolution must be an integer between 0 and 15!\n"
+    usage
+fi
+
+## Threads should be a positive integer
+if [[ -n "$THREADS" && "$THREADS" -le 0 ]]; then
+    echo -e "Error: Threads must be a positive integer!\n"
+    usage
+fi
+
 
 ## View user-supplied parameters
 echo -e "\nInput parameters:"
