@@ -55,6 +55,7 @@ option_list <- list(
 
 ## Parse the command line arguments
 opt <- parse_args(OptionParser(option_list = option_list))
+if(!is.na(opt$specieskeys) && !file.exists(opt$specieskeys)){ cat("The specified file with specieskeys does not exist.\n", file=stderr()); stop() }
 
 if(!is.na(opt$latmin) && (opt$latmin < -90 || opt$latmin > 90)){ cat("The minimum latitude is out of range.\n", file=stderr()); stop() }
 if(!is.na(opt$latmax) && (opt$latmax < -90 || opt$latmax > 90)){ cat("The maximum latitude is out of range.\n", file=stderr()); stop() }
