@@ -56,6 +56,21 @@ option_list <- list(
 ## Parse the command line arguments
 opt <- parse_args(OptionParser(option_list = option_list))
 
+if(!is.na(opt$latmin) && (opt$latmin < -90 || opt$latmin > 90)){ cat("The minimum latitude is out of range.\n", file=stderr()); stop() }
+if(!is.na(opt$latmax) && (opt$latmax < -90 || opt$latmax > 90)){ cat("The maximum latitude is out of range.\n", file=stderr()); stop() }
+if(!is.na(opt$latmin) && !is.na(opt$latmax) && opt$latmin > opt$latmax){ cat("Spatial filter: The minimum latitude is greater than the maximum latitude.\n", file=stderr()); stop() }
+
+if(!is.na(opt$lonmin) && (opt$lonmin < -180 || opt$lonmin > 180)){ cat("The minimum longitude is out of range.\n", file=stderr()); stop() }
+if(!is.na(opt$lonmax) && (opt$lonmax < -180 || opt$lonmax > 180)){ cat("The maximum longitude is out of range.\n", file=stderr()); stop() }
+if(!is.na(opt$lonmin) && !is.na(opt$lonmax) && opt$lonmin > opt$lonmax){ cat("Spatial filter: The minimum longitude is greater than the maximum longitude.\n", file=stderr()); stop() }
+
+## Temporary (may be changed later) - check if all coordinates are specified for a full bounding box (or none are specified)
+coords <- c(opt$lonmin, opt$latmin, opt$lonmax, opt$latmax)
+if( ! (all(sapply(coords, is.na)) || all(!sapply(coords, is.na))) ) {
+  stop("You must specify the bounding box coordinates together (lonmin, latmin, lonmax, latmax).")
+}
+
+
 if(!is.na(opt$country)){
   ## December 2024: 249 current officially assigned ISO 3166-1 alpha-2 codes
   ## In Natural Earth v.5.1.2, there are 237 ISO-A2 codes
