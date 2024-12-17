@@ -158,6 +158,30 @@ if(! is.na(COUNTRY)) {
   HEXES <- c(HEXES, COUNTRY_HEXES)
 }
 
+
+## Get grid-cells from a bounding box
+if(! is.na(LONMIN) && ! is.na(LONMAX) && ! is.na(LATMIN) && ! is.na(LATMAX)) {
+  cat("Finding grid-cells from a bounding box\n")
+  boundingbox <- c(LONMIN, LATMIN, LONMAX, LATMAX)
+  
+  ## Convert to WKT format
+  BBOX <- sprintf('POLYGON((%s %s,%s %s,%s %s,%s %s,%s %s))',
+    boundingbox[1], boundingbox[2],  # bottom-left
+    boundingbox[3], boundingbox[2],  # bottom-right
+    boundingbox[3], boundingbox[4],  # top-right
+    boundingbox[1], boundingbox[4],  # top-left
+    boundingbox[1], boundingbox[2]   # close polygon by returning to start
+  )
+
+
+  ## Add to the main list of grid-cells
+  HEXES <- c(HEXES, BBOX_HEXES)
+
+}
+
+
+
+
 ## Get grid-cells from a polygon
 if(! is.na(POLYGON)) {
 
