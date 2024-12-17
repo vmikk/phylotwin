@@ -151,6 +151,81 @@ BASISOFRECORD <- to_na( opt$basisofrecord )
 
 DATA <- opt$data
 
+##########################################################
+########################################################## Taxonomy-based filters
+##########################################################
+
+## Initialize species keys
+SPECIESKEYS_SELECTED <- vector(mode = "character")
+
+## Based on the specified phylogenetic tree, load corresponding taxonomy table
+cat("\nLoading taxonomic data for the specified phylogenetic tree\n")
+  
+## Get the name of taxonomy table (the same prefix as for the tree file)
+tax_table <- file.path(
+  DATA, "TaxonomyTables", 
+  sub(pattern = "\\.nwk$", replacement = ".qs", x = basename(TREE)))
+
+if(!file.exists(tax_table)){
+  cat("File with taxonomy table does not exist (", tax_table, ").\n", file=stderr())
+  stop()
+}
+
+## Load taxonomy table
+tax_table <- qs::qread(tax_table)
+
+cat("...number of records in taxonomy table:", nrow(tax_table), "\n")
+
+## Apply taxonomic filters if specified
+if(!is.na(PHYLUM)) {
+  cat("...filtering by Phylum\n")
+  phyla <- unique(strsplit(PHYLUM, ",")[[1]])
+  tax_table <- tax_table[tax_table$phylum %in% phyla, ]
+}
+if(!is.na(CLASS)) {
+  cat("...filtering by Class\n")
+  classes <- unique(strsplit(CLASS, ",")[[1]])
+  tax_table <- tax_table[tax_table$class %in% classes, ]
+}
+if(!is.na(ORDER)) {
+  cat("...filtering by Order\n")
+  orders <- unique(strsplit(ORDER, ",")[[1]])
+  tax_table <- tax_table[tax_table$order %in% orders, ]
+}
+if(!is.na(FAMILY)) {
+  cat("...filtering by Family\n")
+  families <- unique(strsplit(FAMILY, ",")[[1]])
+  tax_table <- tax_table[tax_table$family %in% families, ]
+}
+if(!is.na(GENUS)) {
+  cat("...filtering by Genus\n")
+  genera <- unique(strsplit(GENUS, ",")[[1]])
+  tax_table <- tax_table[tax_table$genus %in% genera, ]
+}
+
+cat("...number of records in taxonomy table after filtering:", nrow(tax_table), "\n")
+
+## Get species keys from filtered taxonomy
+SPECIESKEYS_SELECTED <- c(SPECIESKEYS_SELECTED, unique(tax_table$specieskey))
+
+## User-supplied species keys
+if(! is.na(SPECIESKEYS)) {
+  cat("\nLoading user-supplied species keys\n")
+  USER_SPECIESKEYS <- fread(SPECIESKEYS, header = FALSE)$V1
+  cat("...number of records in user-supplied species keys:", length(USER_SPECIESKEYS), "\n")
+  
+  SPECIESKEYS_SELECTED <- unique(c(SPECIESKEYS_SELECTED, USER_SPECIESKEYS))
+}
+
+
+cat("The total number of species keys selected:", length(SPECIESKEYS_SELECTED), "\n")
+
+## Validate
+if(length(SPECIESKEYS_SELECTED) == 0) {
+  cat("No species selected for the analysis. Check your taxonomic filters or species keys file.\n", file=stderr())
+  stop()
+}
+
 
 ##########################################################
 ########################################################## Grid-cell-based filters
