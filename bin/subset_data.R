@@ -152,6 +152,48 @@ BASISOFRECORD <- to_na( opt$basisofrecord )
 DATA <- opt$data
 
 
+##########################################################
+########################################################## Grid-cell-based filters
+##########################################################
+# - Country
+# - Bounding box
+# - Polygon
+
+## Function to fetch H3 cells from WKT
+get_h3_cells_from_wkt <- function(wkt, h3res) {
+  # wkt - vectort of polygons in WKT format
+  # h3res - H3 resolution
+
+  ## Export to file
+  cat("...exporting WKT to file\n")
+  tmp_wkt <- tempfile(pattern = "polygon_wkt", fileext = ".wkt")
+  fwrite(
+    x = data.table(Polygon = WKT),
+    file = tmp_wkt,
+    sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+
+  ## Get H3 cells that intersect with the polygon
+  cat("...getting H3 cells\n")
+  tmp_h3 <- tempfile(pattern = "polygon_h3", fileext = ".txt")
+  
+  system2(
+    command = system(command = "which wkt_polygon_to_h3_cells.sh", intern = TRUE),
+    args = c(
+      "-i", tmp_wkt, 
+      "-o", tmp_h3, 
+      "-r", RESOLUTION, 
+      "-a", "experimental", 
+      "-c", "CONTAINMENT_OVERLAPPING"),
+    stdout = "", stderr = "",             # output stdout and stderr to R console
+    wait = TRUE)
+
+  ## Load the H3 cells
+  hexes <- fread(tmp_h3, header = TRUE, sep = "\t")
+
+  return(hexes)
+}
+
+
 ## Initialize the grid-cells of interest
 HEXES <- vector(mode = "character")
 
