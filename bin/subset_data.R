@@ -230,13 +230,13 @@ if(! is.na(LONMIN) && ! is.na(LONMAX) && ! is.na(LATMIN) && ! is.na(LATMAX)) {
     boundingbox[1], boundingbox[2]   # close polygon by returning to start
   )
 
+  ## Get H3 cells that intersect with the bounding box
+  BBOX_HEXES <- get_h3_cells_from_wkt(wkt = BBOX, h3res = RESOLUTION)
+  cat("..number of grid-cells from the bounding box: ", nrow(BBOX_HEXES), "\n")
 
   ## Add to the main list of grid-cells
-  HEXES <- c(HEXES, BBOX_HEXES)
-
+  HEXES <- c(HEXES, BBOX_HEXES$h3_cell)
 }
-
-
 
 
 ## Get grid-cells from a polygon
@@ -317,36 +317,22 @@ if(! is.na(POLYGON)) {
   ## Get all hexagons with CENTERS contained in a given polygon
   # POLYGON_HEXES <- h3::polyfill(POLY, res = RESOLUTION)
 
-  ## Export to file
-  cat("...exporting WKT to file\n")
-  tmp_wkt <- tempfile(pattern = "polygon_wkt", fileext = ".wkt")
-  fwrite(
-    x = data.table(Polygon = WKT),
-    file = tmp_wkt,
-    sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
-
   ## Get H3 cells that intersect with the polygon
-  cat("...getting H3 cells\n")
-  tmp_h3 <- tempfile(pattern = "polygon_h3", fileext = ".txt")
-  
-  system2(
-    command = system(command = "which wkt_polygon_to_h3_cells.sh", intern = TRUE),
-    args = c(
-      "-i", tmp_wkt, 
-      "-o", tmp_h3, 
-      "-r", RESOLUTION, 
-      "-a", "experimental", 
-      "-c", "CONTAINMENT_OVERLAPPING"),
-    stdout = "", stderr = "",             # output stdout and stderr to R console
-    wait = TRUE)
-
-  ## Load the H3 cells
-  POLYGON_HEXES <- fread(tmp_h3, header = TRUE, sep = "\t")
-  POLYGON_HEXES <- POLYGON_HEXES$h3_cell
+  POLYGON_HEXES <- get_h3_cells_from_wkt(wkt = WKT, h3res = RESOLUTION)
+  cat("..number of grid-cells from the polygon: ", nrow(POLYGON_HEXES), "\n")
 
   ## Add to the main list of grid-cells
-  HEXES <- c(HEXES, POLYGON_HEXES)
+  HEXES <- c(HEXES, POLYGON_HEXES$h3_cell)
 }
+
+
+## Overall list of grid-cells
+HEXES <- unique(HEXES)
+if(length(HEXES) > 0){
+  cat("Total number of grid-cells to extract from the data: ", length(HEXES), "\n")
+}
+
+
 
 
 
