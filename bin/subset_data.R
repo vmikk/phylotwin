@@ -26,7 +26,9 @@ load_pckg("duckdb")
 load_pckg("arrow")
 load_pckg("dplyr")
 load_pckg("qs")
-load_pckg("h3")
+load_pckg("glue")
+load_pckg("openxlsx")
+# load_pckg("h3")
 
 ## Define the option parser
 option_list <- list(
