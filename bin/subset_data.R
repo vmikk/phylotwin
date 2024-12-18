@@ -436,4 +436,32 @@ if(length(HEXES) > 0){
 
 
 
+##########################################################
+########################################################## Prepare a request to the database
+##########################################################
+
+cat("Preparing the database query\n")
+
+## Export files with H3 cells and species keys
+if(!length(HEXES) > 0){
+  stop("No H3 cells selected for the analysis. Check your spatial filters.\n")
+}
+if(!length(SPECIESKEYS_SELECTED) > 0){
+  stop("No species keys selected for the analysis. Check your taxonomic filters or species keys file.\n")
+}
+
+cat("Exporting H3 cells and species keys to files\n")
+
+fwrite( 
+  x = data.table(h3_cell = sort(HEXES)),
+  file = "h3_cells.txt.gz",
+  sep = "\t", quote = FALSE, col.names = TRUE, compress = "gzip")
+
+fwrite(
+  x = data.table(specieskey = sort(SPECIESKEYS_SELECTED)),
+  file = "species_keys.txt.gz",
+  sep = "\t", quote = FALSE, col.names = TRUE, compress = "gzip")
+
+
+
 
