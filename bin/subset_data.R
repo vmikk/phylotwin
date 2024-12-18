@@ -463,5 +463,83 @@ fwrite(
   sep = "\t", quote = FALSE, col.names = TRUE, compress = "gzip")
 
 
+cat("\nInitializing DuckDB\n")
+
+## Initialize DuckDB in-memory database
+con <- dbConnect(duckdb::duckdb(), dbdir = ":memory:")
+
+
+cat("Preparing the query for DuckDB\n")
+
+## Prepare the query for DuckDB
+main_query <- glue("
+-- Create temporary tables for filter values
+CREATE TEMP TABLE h3_cells AS 
+SELECT h3_cell AS h3_cell 
+FROM read_csv('{h3_cells}', header=true, delim='\\t');
+
+CREATE TEMP TABLE species_keys AS 
+SELECT CAST(specieskey AS BIGINT) AS specieskey 
+FROM read_csv('{species_keys}', header=true, delim='\\t');
+
+-- Main filtered aggregation
+COPY (
+    WITH filtered_data AS (
+        SELECT *
+        FROM read_parquet('{INPDIR}/*.parquet')
+        WHERE H3 IN (SELECT h3_cell FROM h3_cells)
+        AND specieskey IN (SELECT specieskey FROM species_keys)",
+  h3_cells     = "h3_cells.txt.gz",
+  species_keys = "species_keys.txt.gz")
+
+if(! is.na(MINYEAR)){ main_query <- glue(main_query, " AND year >= {MINYEAR}") }
+if(! is.na(MAXYEAR)){ main_query <- glue(main_query, " AND year <= {MAXYEAR}") }
+
+main_query <- glue(
+  main_query, "
+    )
+    SELECT 
+        H3,
+        specieskey,
+        SUM(record_count) as total_records
+    FROM filtered_data
+    GROUP BY H3, specieskey
+) TO '{output_parquet_long}' (FORMAT 'parquet', COMPRESSION 'ZSTD', COMPRESSION_LEVEL 5);",
+  output_parquet_long = "aggregated_counts.parquet")
+
+main_query <- glue(
+  main_query, "
+-- Dataset keys with record counts
+COPY (
+    WITH filtered_data AS (
+        SELECT *
+        FROM read_parquet('{INPDIR}/*.parquet')
+        WHERE H3 IN (SELECT h3_cell FROM h3_cells)
+        AND specieskey IN (SELECT specieskey FROM species_keys)")
+
+if(! is.na(MINYEAR)){ main_query <- glue(main_query, " AND year >= {MINYEAR}") }
+if(! is.na(MAXYEAR)){ main_query <- glue(main_query, " AND year <= {MAXYEAR}") }
+
+main_query <- glue(
+  main_query, "
+    ),
+    unnested_keys AS (
+        SELECT 
+            UNNEST(dataset_keys) as datasetKey,
+            1 as num_records,  -- count each dataset key once
+            record_count       -- keep the pre-aggregated count (if there are multiple datasets already aggregated, we do not know the actual number of records per dataset key)
+        FROM filtered_data
+    )
+    SELECT 
+        datasetKey,
+        SUM(num_records) as num_records,                    -- actual count of occurrences
+        SUM(record_count) as dataset_records_approximate    -- sum of pre-aggregated counts
+    FROM unnested_keys
+    GROUP BY datasetKey
+    ORDER BY dataset_records_approximate DESC
+) TO '{output_datasetkeys}' (HEADER, DELIMITER '\\t');",
+  output_datasetkeys = "dataset_keys.tsv")
+
+
 
 
