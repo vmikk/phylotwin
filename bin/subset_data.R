@@ -163,6 +163,32 @@ MAXYEAR <- as.numeric(to_na( opt$maxyear) )
 BASISOFRECORD <- to_na( opt$basisofrecord )
 
 DATA <- opt$data
+cat("\nInput-output parameters:\n")
+cat("  Input directory:", INPDIR, "\n")
+cat("  Output prefix:", OUTPUT, "\n")
+
+cat("\nTaxonomy filters:\n")
+cat("  Tree:",   TREE, "\n")
+cat("  Phylum:", PHYLUM, "\n")
+cat("  Class:",  CLASS, "\n")
+cat("  Order:",  ORDER, "\n")
+cat("  Family:", FAMILY, "\n")
+cat("  Genus:",  GENUS, "\n")
+cat("  Specieskeys:", SPECIESKEYS, "\n")
+
+cat("\nSpatial filters:\n")
+cat("  Country:", COUNTRY, "\n")
+cat("  Latitude:", LATMIN, "-", LATMAX, "\n")
+cat("  Longitude:", LONMIN, "-", LONMAX, "\n")
+cat("  Polygon:", POLYGON, "\n")
+
+cat("\nAdditional filters:\n")
+cat("  Minimum year:", MINYEAR, "\n")
+cat("  Maximum year:", MAXYEAR, "\n")
+cat("  Basis of record:", BASISOFRECORD, "\n")
+
+cat("\nInternal data of the pipeline: ", DATA, "\n")
+
 
 ##########################################################
 ########################################################## Taxonomy-based filters
