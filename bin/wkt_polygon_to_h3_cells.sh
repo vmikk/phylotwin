@@ -13,6 +13,8 @@
 #   https://github.com/isaacbrodsky/h3-duckdb/issues/118
 
 
+## Usage:
+##  ./wkt_polygon_to_h3_cells.sh -i test_wkt.txt -o test_h3.txt -r 4
 
 ## Function to display usage information
 usage() {
