@@ -119,6 +119,10 @@ echo -e "\nInput parameters:"
 echo "..Input:  $INPUT"
 echo "..Output: $OUTPUT"
 echo "..H3 resolution: $H3_RESOLUTION"
+echo "..Algorithm: $ALGORITHM"
+if [[ "$ALGORITHM" == "experimental" ]]; then
+    echo "..Containment type: $CONTAINMENT"
+fi
 
 if [[ -n "$THREADS" ]]; then
     echo "..Threads: $THREADS"
