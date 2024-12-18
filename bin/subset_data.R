@@ -80,6 +80,9 @@ if( ! (all(sapply(coords, is.na)) || all(!sapply(coords, is.na))) ) {
   stop("You must specify the bounding box coordinates together (lonmin, latmin, lonmax, latmax).")
 }
 
+if(!is.na(opt$minyear) && (opt$minyear < 0 || opt$minyear > 3000)){ cat("The minimum year is out of range.\n", file=stderr()); stop() }
+if(!is.na(opt$maxyear) && (opt$maxyear < 0 || opt$maxyear > 3000)){ cat("The maximum year is out of range.\n", file=stderr()); stop() }
+if(!is.na(opt$minyear) && !is.na(opt$maxyear) && opt$minyear > opt$maxyear){ cat("Additional filter: The minimum year is greater than the maximum year.\n", file=stderr()); stop() }
 
 if(!is.na(opt$country)){
   ## December 2024: 249 current officially assigned ISO 3166-1 alpha-2 codes
