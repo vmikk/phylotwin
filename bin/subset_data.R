@@ -163,17 +163,31 @@ SPECIESKEYS_SELECTED <- vector(mode = "character")
 cat("\nLoading taxonomic data for the specified phylogenetic tree\n")
   
 ## Get the name of taxonomy table (the same prefix as for the tree file)
-tax_table <- file.path(
-  DATA, "TaxonomyTables", 
-  sub(pattern = "\\.nwk$", replacement = ".qs", x = basename(TREE)))
+curated_trees <- c(
+  "Ferns_FTOL_1-7-0.nwk.gz", "FishTree.nwk.gz", "Henriquez-Piskulich_2024_BeetreeOfLife.nwk.gz", "Kawahara_2023_Butterflies.nwk.gz", 
+  "Tietje_2023_Seed_plants_TACT.nwk.gz", "Varga_2019_Mushrooms.nwk.gz", "VertLife_Amphibians.nwk.gz", 
+  "VertLife_Birds.nwk.gz", "VertLife_Mammals.nwk.gz", "VertLife_Squamates.nwk.gz")
 
-if(!file.exists(tax_table)){
-  cat("File with taxonomy table does not exist (", tax_table, ").\n", file=stderr())
-  stop()
+if(basename(TREE) %in% curated_trees){
+  cat("...using one of the curated phylogenies\n")
+
+  tax_table <- file.path(DATA, "TaxonomyTables", "CuratedTrees_TaxonomyTable.parquet")
+
+  if(!file.exists(tax_table)){
+    cat("File with taxonomy table does not exist (", tax_table, ").\n", file=stderr())
+    stop()
+  }
+
+  tree_id <- sub(pattern = "\\.nwk.gz$", replacement = "", x = basename(TREE))
 }
 
 ## Load taxonomy table
-tax_table <- qs::qread(tax_table)
+# tax_table <- qs::qread(tax_table)
+# tax_table <- arrow::read_parquet(tax_table)
+
+tax_table <- open_dataset(tax_table) |> 
+  filter(TreeID == tree_id) |> 
+  collect() |> setDT()
 
 cat("...number of records in taxonomy table:", nrow(tax_table), "\n")
 
@@ -204,7 +218,11 @@ if(!is.na(GENUS)) {
   tax_table <- tax_table[tax_table$genus %in% genera, ]
 }
 
-cat("...number of records in taxonomy table after filtering:", nrow(tax_table), "\n")
+if(is.na(PHYLUM) && is.na(CLASS) && is.na(ORDER) && is.na(FAMILY) && is.na(GENUS)){
+  cat("...no taxonomic filters specified, selecting all species keys from the tree\n")
+} else {
+  cat("...number of records in taxonomy table after filtering:", nrow(tax_table), "\n")
+}
 
 ## Get species keys from filtered taxonomy
 SPECIESKEYS_SELECTED <- c(SPECIESKEYS_SELECTED, unique(tax_table$specieskey))
