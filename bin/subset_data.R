@@ -2,6 +2,13 @@
 
 ## Prepare a data subset for diversity estimation
 
+## Notes:
+# - Taxonomy filters are applied with AND condtion for the taxonomic ranks,
+#   then, user-supplied species keys are added to the list
+#   if no constraints are specified, all species keys from a phylogenetic tree are selected
+
+
+
 ## Function to load packages
 load_pckg <- function(pkg = "data.table"){
     suppressPackageStartupMessages( library(package = pkg, character.only = TRUE) )
