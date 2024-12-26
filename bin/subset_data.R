@@ -67,6 +67,17 @@ option_list <- list(
 
 ## Parse the command line arguments
 opt <- parse_args(OptionParser(option_list = option_list))
+# print(opt)
+
+## Function to convert text "NA"s to NA
+to_na <- function(x){
+  if(x %in% c("NA", "null", "Null")){ x <- NA }
+  return(x)
+}
+
+## Replaces "null"s from Nextflow with NA
+opt <- lapply(X = opt, FUN = to_na)
+
 
 ## Validation of the required arguments
 if(is.na(opt$inpdir)){ cat("Input directory with pre-processed species occurrence counts in Parquet format is not specified.\n", file=stderr()); stop() }
