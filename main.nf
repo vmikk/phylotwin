@@ -21,14 +21,12 @@ process subset_data {
     """
     echo -e "Subsetting data\n"
 
-    echo "Input directory: " ${occurrences}
-
     subset_data.R \
       --inpdir      ${occurrences} \
       --output      ./results \
       --tree        ${params.tree} \
       --phylum      ${params.phylum} \
-      --class       ${params.class} \
+      --class       ${params.classs} \
       --order       ${params.order} \
       --family      ${params.family} \
       --genus       ${params.genus} \
