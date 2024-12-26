@@ -30,6 +30,8 @@ load_pckg("openxlsx")
 # load_pckg("wk")
 # load_pckg("h3")
 
+cat("\n Parsing command line arguments\n")
+
 ## Define the option parser
 option_list <- list(
     ## Input-output parameters
@@ -198,6 +200,8 @@ cat("\nInternal data of the pipeline: ", DATA, "\n")
 ########################################################## Taxonomy-based filters
 ##########################################################
 
+cat("\n\n-------- Taxonomy-based filters --------\n\n")
+
 ## Initialize species keys
 SPECIESKEYS_SELECTED <- vector(mode = "character")
 
@@ -299,6 +303,8 @@ if(length(SPECIESKEYS_SELECTED) == 0) {
 # - Country
 # - Bounding box
 # - Polygon
+
+cat("\n\n-------- Grid-cell-based filters --------\n\n")
 
 ## Function to fetch H3 cells from WKT
 get_h3_cells_from_wkt <- function(wkt, h3res) {
@@ -484,7 +490,7 @@ if(length(HEXES) > 0){
 ########################################################## Prepare a request to the database
 ##########################################################
 
-cat("Preparing the database query\n")
+cat("\n\n-------- Preparing the database query --------\n\n")
 
 ## Export files with H3 cells and species keys
 if(!length(HEXES) > 0){
