@@ -148,14 +148,6 @@ if(!is.na(opt$country)){
 }
 
 
-
-## Function to convert text "NA"s to NA
-to_na <- function(x){
-  if(x %in% c("NA", "null", "Null")){ x <- NA }
-  return(x)
-}
-
-
 ## Input parameters
 INPDIR <- opt$inpdir
 OUTPUT <- opt$output
@@ -206,6 +198,10 @@ cat("  Maximum year:", MAXYEAR, "\n")
 cat("  Basis of record:", BASISOFRECORD, "\n")
 
 cat("\nInternal data of the pipeline: ", DATA, "\n")
+
+
+## Specify the number of threads for data.table
+setDTthreads(threads = THREADS)
 
 
 ##########################################################
