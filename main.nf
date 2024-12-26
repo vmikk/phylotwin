@@ -2,7 +2,8 @@
 
 println( "Running PhyloTwin diversity estimation pipeline" )
 
-// Count number of occurrences per species
+
+// Prepare data subset for diversity estimation (based on spatial and taxonomy filters)
 process subset_data {
 
     input:
@@ -15,8 +16,8 @@ process subset_data {
       path "dataset_keys.tsv",          emit: dataset_keys
 
     script:
-    def spkeysArg = specieskeys ? "--specieskeys ${specieskeys}" : ''
-    def polyArg = polygon ? "--polygon ${polygon}" : ''
+    def spkeysArg = specieskeys.name != 'no_specieskeys' ? "--specieskeys ${specieskeys}" : ''
+    def polyArg = polygon.name != 'no_polygon' ? "--polygon ${polygon}" : ''
     """
     echo -e "Subsetting data\n"
 
