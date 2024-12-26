@@ -53,8 +53,8 @@ workflow {
   ch_tree = Channel.fromPath(params.tree)
     
   // Optional input files
-  ch_poly   = params.polygon ? Channel.fromPath(params.polygon) : Channel.empty()
-  ch_spkeys = params.specieskeys ? Channel.fromPath(params.specieskeys) : Channel.empty()
+  ch_poly   = params.polygon ? Channel.fromPath(params.polygon) : Channel.fromPath("no_polygon", checkIfExists: false)
+  ch_spkeys = params.specieskeys ? Channel.fromPath(params.specieskeys) : Channel.fromPath("no_specieskeys", checkIfExists: false)
 
   ch_occ.view()
   ch_tree.view()
