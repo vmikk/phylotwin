@@ -126,6 +126,17 @@ cat("Metrics: ", paste(MEASURES, collapse = ", "), "\n")
 RES <- vector("list")
 
 
+######## Number of records per H3 cell
+
+cat("..Estimating number of records per H3 cell\n")
+num_records <- occ[ , .(NumRecords = sum(total_records, na.rm = TRUE)), by = "H3" ]
+
+######## Traditional indices
+
+cat("..Estimating species richness\n")
+RES <- c(RES, list(Richness = rowSums(datt[,-1]) ))
+
+
 
 ######## PhyloMeasure-based indices
 
