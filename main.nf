@@ -46,3 +46,30 @@ process subset_data {
     """
 }
 
+workflow {
+
+  // Channels
+  ch_occ  = Channel.fromPath(params.occ, type: 'dir', checkIfExists: true)
+  ch_tree = Channel.fromPath(params.tree)
+    
+  // Optional input files
+  ch_poly   = params.polygon ? Channel.fromPath(params.polygon) : Channel.empty()
+  ch_spkeys = params.specieskeys ? Channel.fromPath(params.specieskeys) : Channel.empty()
+
+  ch_occ.view()
+  ch_tree.view()
+  ch_poly.view()
+  ch_spkeys.view()
+
+  // Pipeline data
+  ch_data = Channel.fromPath(params.data, type: 'dir', checkIfExists: true)
+  // ch_taxatables   = params.data + "/TaxonomyTables"
+  // ch_phylotrees   = params.data + "/Phylotrees"
+  // ch_countries_h3 = params.data + "/Countries_H3"
+
+  // Subset data
+  subset_data(ch_occ, ch_spkeys, ch_poly)
+
+}
+
+
