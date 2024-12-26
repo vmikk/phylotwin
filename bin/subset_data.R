@@ -331,6 +331,10 @@ get_h3_cells_from_wkt <- function(wkt, h3res) {
   ## Load the H3 cells
   hexes <- fread(tmp_h3, header = TRUE, sep = "\t")
 
+  ## Clean up
+  unlink(tmp_wkt)
+  unlink(tmp_h3)
+
   return(hexes)
 }
 
