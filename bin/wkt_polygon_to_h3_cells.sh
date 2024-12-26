@@ -1,6 +1,7 @@
 #!/bin/bash
 
 ## Convert WKT polygons to H3 cells
+echo "Running script to convert WKT polygons to H3 cells [$(basename $0)]"
 
 ## NB. 
 ## - Input is a text file with polygons specified in WKT format
