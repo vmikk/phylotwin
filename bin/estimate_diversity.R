@@ -100,3 +100,11 @@ cat("Subsetting phylogenetic tree\n")
 tree <- keep.tip(tree, intersect(tree$tip.label, colnames(datt)[-1]))
 
 
+
+## Convert data to matrix
+cat("Converting data to matrix\n")
+datm <- as.matrix(datt[,-1])
+rownames(datm) <- datt$H3
+
+
+
