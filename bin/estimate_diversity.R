@@ -99,6 +99,10 @@ datt <- dcast(
 cat("Subsetting phylogenetic tree\n")
 tree <- keep.tip(tree, intersect(tree$tip.label, colnames(datt)[-1]))
 
+## Data summary
+cat("Data summary:\n")
+cat("  Number of species:", ncol(datt) - 1, "\n")
+cat("  Number of H3 cells:", nrow(datt), "\n")
 
 
 ## Convert data to matrix
