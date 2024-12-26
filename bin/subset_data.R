@@ -273,9 +273,14 @@ SPECIESKEYS_SELECTED <- c(SPECIESKEYS_SELECTED, unique(tax_table$specieskey))
 if(! is.na(SPECIESKEYS)) {
   cat("\nLoading user-supplied species keys\n")
   USER_SPECIESKEYS <- fread(SPECIESKEYS, header = FALSE)$V1
-  cat("...number of records in user-supplied species keys:", length(USER_SPECIESKEYS), "\n")
   
-  SPECIESKEYS_SELECTED <- unique(c(SPECIESKEYS_SELECTED, USER_SPECIESKEYS))
+  if(length(USER_SPECIESKEYS) == 0){
+    cat("...No species keys found in the user-supplied file - ignoring it\n", file=stderr())
+  } else {
+    cat("...number of records in user-supplied species keys:", length(USER_SPECIESKEYS), "\n")
+    SPECIESKEYS_SELECTED <- unique(c(SPECIESKEYS_SELECTED, USER_SPECIESKEYS))
+  }
+  
 }
 
 
