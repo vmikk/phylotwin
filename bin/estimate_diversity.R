@@ -107,4 +107,49 @@ datm <- as.matrix(datt[,-1])
 rownames(datm) <- datt$H3
 
 
+##########################################################
+########################################################## Estimate species diversity
+##########################################################
+
+cat("\n\n-------- Estimating species diversity --------\n\n")
+
+## Parse diversity metrics to estimate
+MEASURES <- sort(unique( strsplit(DIV, ",")[[1]] ))
+cat("Number of diversity metrics to estimate:", length(MEASURES), "\n")
+cat("Metrics: ", paste(MEASURES, collapse = ", "), "\n")
+
+## Initialize results
+RES <- vector("list")
+
+
+
+######## PhyloMeasure-based indices
+
+if("PD" %in% MEASURES){
+  cat("..Estimating PD\n")
+  RES <- c(RES, list(PD = PhyloMeasures::pd.query(tree = tree, matrix = datm) ))
+}
+if("MPD" %in% MEASURES){
+  cat("..Estimating MPD\n")
+  RES <- c(RES, list(MPD = PhyloMeasures::mpd.query(tree = tree, matrix = datm) ))
+}
+if("MNTD" %in% MEASURES){
+  cat("..Estimating MNTD\n")
+  RES <- c(RES, list(MNTD = PhyloMeasures::mntd.query(tree = tree, matrix = datm) ))
+}
+
+if("SES.PD" %in% MEASURES){
+  cat("..Estimating SES.PD\n")
+  RES <- c(RES, list(SES.PD = PhyloMeasures::pd.query(tree = tree, matrix = datm, standardize = T) ))
+}
+if("SES.MPD" %in% MEASURES){
+  cat("..Estimating SES.MPD\n")
+  RES <- c(RES, list(SES.MPD = PhyloMeasures::mpd.query(tree = tree, matrix = datm, standardize = T) ))
+}
+if("SES.MNTD" %in% MEASURES){
+  cat("..Estimating SES.MNTD\n")
+  RES <- c(RES, list(SES.MNTD = PhyloMeasures::mntd.query(tree = tree, matrix = datm, standardize = T) ))
+}
+
+
 
