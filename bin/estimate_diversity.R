@@ -44,3 +44,59 @@ opt <- lapply(X = opt, FUN = to_na)
 
 
 
+
+## Input parameters
+OCC     <- opt$input
+TREE    <- opt$tree
+DIV     <- opt$div
+THREADS <- opt$threads
+
+cat("\nParameters parsed:\n")
+cat("  Input:", OCC, "\n")
+cat("  Tree:", TREE, "\n")
+cat("  Diversity metrics:", DIV, "\n")
+cat("  Number of threads:", THREADS, "\n")
+
+## Specify the number of threads for data.table
+setDTthreads(threads = THREADS)
+
+
+##########################################################
+########################################################## Load and reshape data
+##########################################################
+
+cat("\n\n-------- Loading data --------\n\n")
+
+## Load phylogenetic tree
+cat("Loading phylogenetic tree: ", TREE, "\n")
+tree <- read.tree(TREE)
+
+## Load aggregated species occurrences
+cat("Loading aggregated species occurrences\n")
+occ <- read_parquet(OCC)
+setDT(occ)
+
+if(any(!occ$total_records >= 1)){
+  cat("..some records have missing values\n")
+  occ <- occ[ total_records >= 1 ]
+}
+
+## Scale species occurrences to presence/absence
+occ[ , PA := 1 ]
+
+## Reshape species occurrences to wide format
+cat("Reshaping species occurrences to wide format\n")
+datt <- dcast(
+  data = occ,
+  formula = H3 ~ specieskey,
+  value.var = "PA",            # value.var = "total_records",
+  fun.aggregate = sum
+)
+
+# any(datt[,-1] > 1)
+
+## Subset phylogenetic tree to species present in the data
+cat("Subsetting phylogenetic tree\n")
+tree <- keep.tip(tree, intersect(tree$tip.label, colnames(datt)[-1]))
+
+
