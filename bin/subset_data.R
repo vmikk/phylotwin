@@ -12,7 +12,7 @@
 ## Function to load packages
 load_pckg <- function(pkg = "data.table"){
     suppressPackageStartupMessages( library(package = pkg, character.only = TRUE) )
-    cat(paste(pkg, packageVersion(pkg), "\n"))
+    cat(".. ", paste(pkg, packageVersion(pkg), "\n"))
 }
 
 cat("Loading packages:\n")
@@ -25,6 +25,7 @@ load_pckg("arrow")
 load_pckg("dplyr")
 load_pckg("qs")
 load_pckg("glue")
+# load_pckg("crayon")
 load_pckg("openxlsx")
 # load_pckg("geos")
 # load_pckg("wk")
