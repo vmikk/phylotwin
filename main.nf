@@ -45,6 +45,39 @@ process subset_data {
     """
 }
 
+
+
+// Estimate diversity (mostly fast indices)
+process estimate_diversity {
+
+    input:
+      path table
+      path tree
+
+    output:
+      path "diversity_estimates.txt", emit: txt
+      path "diversity_estimates.qs",  emit: qs
+
+    script:
+    """
+    echo -e "Estimating diversity\n"
+
+    echo "Species abundances: " ${table}
+    echo "Phylogenetic tree: "  ${tree}
+
+    estimate_diversity.R \
+      --input       ${table} \
+      --tree        ${tree} \
+      --output      diversity_estimates \
+      --div         ${params.div} \
+      --threads     ${task.cpus}
+
+    echo "..Done"
+    """
+}
+
+
+
 workflow {
 
   // Channels
