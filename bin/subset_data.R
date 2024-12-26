@@ -66,7 +66,7 @@ option_list <- list(
 opt <- parse_args(OptionParser(option_list = option_list))
 
 ## Validation of the required arguments
-if(is.na(opt$input)) { cat("Input is not specified.\n", file=stderr()); stop() }
+if(is.na(opt$inpdir)){ cat("Input directory with pre-processed species occurrence counts in Parquet format is not specified.\n", file=stderr()); stop() }
 if(is.na(opt$output)){ cat("Output prefix is not specified.\n", file=stderr()); stop() }
 if(!is.na(opt$specieskeys) && !file.exists(opt$specieskeys)){ cat("The specified file with specieskeys does not exist.\n", file=stderr()); stop() }
 
