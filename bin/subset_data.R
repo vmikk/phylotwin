@@ -2,6 +2,27 @@
 
 ## Prepare a data subset for diversity estimation
 
+## Usage:
+# Rscript bin/subset_data.R \
+#   --input  /path/to/input \
+#   --output /path/to/output \
+#   --tree   /path/to/tree.nwk \
+#   --phylum "Phylum1,Phylum2" \
+#   --class  "Class1,Class2" \
+#   --order  "Order1,Order2" \
+#   --family "Family1,Family2" \
+#   --genus  "Genus1,Genus2" \
+#   --specieskeys /path/to/specieskeys.txt \
+#   --resolution 4 \
+#   --country "EE,FI,DK,NO,SE" \
+#   --latmin 54.8 --latmax 61 \
+#   --lonmin 6.5 --lonmax 28.2 \
+#   --polygon /path/to/polygon.gpkg \
+#   --data   /path/to/pipeline/data \
+#   --duckdb_memory 10GB \
+#   --threads 2
+
+
 ## Notes:
 # - Taxonomy filters are applied with AND condtion for the taxonomic ranks,
 #   then, user-supplied species keys are added to the list
