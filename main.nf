@@ -55,8 +55,9 @@ process estimate_diversity {
       path tree
 
     output:
-      path "diversity_estimates.txt", emit: txt
-      path "diversity_estimates.qs",  emit: qs
+      path "diversity_estimates.txt",  emit: txt
+      path "diversity_estimates.qs",   emit: qs
+      path "diversity_estimates.gpkg", emit: geopackage
 
     script:
     """
