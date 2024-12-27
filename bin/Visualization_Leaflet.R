@@ -1,12 +1,17 @@
 #!/usr/bin/env Rscript
 
-## Visualization of Biodiverse results using intaractive maps (Leaflet-based)
+## Visualization of diversity estimates using intaractive maps (Leaflet-based)
 
-cat("Leaflet-based visualization of Biodiverse results\n")
-cat("Script name: 15_Leaflets.R\n")
+cat("Leaflet-based visualization of biodiversity estimates\n")
+
 
 ## Usage example:
-# ./15_Leaflets.R \
+# Visualization_Leaflet.R \
+#   --divestimates ${divestimates} \
+#   --variables    ${index} \
+#   --shortid      TRUE \
+#   --antimeridianfix TRUE
+
 #   --observed  "RND_SPATIAL_RESULTS.csv" \
 #   --sesscores "RND_rand--z_scores--SPATIAL_RESULTS.csv" \
 #   --sigscores "RND_rand--SPATIAL_RESULTS.csv" \
@@ -46,88 +51,60 @@ cat("Script name: 15_Leaflets.R\n")
 # - handle NA values (e.g., if Richness == 1)
 
 
-############################################## Parse input parameters
+## Function to load packages
+load_pckg <- function(pkg = "data.table"){
+    suppressPackageStartupMessages( library(package = pkg, character.only = TRUE) )
+    cat(".. ", paste(pkg, packageVersion(pkg), "\n"))
+}
 
-## Check time
-start_time <- Sys.time()
+cat("Loading packages:\n")
+load_pckg("optparse")
+load_pckg("sf")
+load_pckg("h3")
+load_pckg("data.table")
+load_pckg("plyr")
+load_pckg("leaflet")
+load_pckg("mapview")
+load_pckg("qs")
 
-
-cat("Parsing input options and arguments...\n")
-
-suppressPackageStartupMessages(require(optparse))
+cat("\n Parsing command line arguments\n")
 
 ## Parse arguments
 option_list <- list(
-  make_option(c("-r", "--observed"),  action="store", default=NA, type='character', help="Input file (CSV) with Biodiverse results - observed indices"),
-  make_option(c("-s", "--sesscores"), action="store", default=NA, type='character', help="Input file (CSV) with Biodiverse results - SES-scores"),
-  make_option(c("-q", "--sigscores"), action="store", default=NA, type='character', help="Input file (CSV) with Biodiverse results - Randomization p-values"),
-  make_option(c("--canape"),          action="store", default=NA, type='character', help="Input file (CSV) with Biodiverse results - CANAPE [optional, not implemented yet]"),
-  make_option(c("--hurlbert"),        action="store", default=NA, type='character', help="Input file (CSV) with Biodiverse results - Hurlbert ES indices [optional]"),
-  make_option(c("-n", "--reccounts"), action="store", default=NA, type='character', help="File with the total number of (filtered) records per H3 cell"),
-  make_option(c("--resolution"),      action="store", default=4L, type='integer', help="Spatial resolution of the H3 Geospatial Indexing System"),
-  make_option(c("-v", "--variables"), action="store", default="RICHNESS_ALL,PD,SES_PD,PD_P,SES_PD_P", type='character', help="Diversity variables to plot (comma-separated entries)"),
-  make_option(c("-i", "--isolate_maps"), action="store", default=FALSE, type='logical', help="By default (FALSE), all variables are overlaid and saved into a single output file. To generate individual choropleth file for each variable, set to TRUE"),
-  make_option(c("--canapesuper"),     action="store", default=TRUE, type='logical', help="Include the `superendemism` class in CANAPE results (default, FALSE)"),
-  make_option(c("-p", "--palette"), action="store", default="quantile", type='character', help="Color palette type"),
-  make_option(c("-c", "--color"), action="store", default="RdYlBu", type='character', help="Color gradient scheme for the diversity indices (except for SES, CANAPE, and redundancy metrics)"),
-  make_option(c("-b", "--bins"), action="store", default=5L, type='integer', help="Number of color bins for quantile palette"),
-  make_option(c("--colorses"), action="store", default="threat", type='character', help="Color scheme for standardized effect sizes, SES (default, `threat`; alternative - `hotspots`"),
+  make_option(c("-d", "--divestimates"), action="store", default=NA, type='character', help="Input file with diversity estimates (tab-delimited or QS)"),
+  make_option(c("-v", "--variables"),    action="store", default="PD", type='character', help="Diversity variables to plot (comma-separated entries)"),
   make_option(c("-j", "--redundancy"), action="store", default=0, type='double', help="Redundancy threshold for hiding the grid cells with low number of records (disabled by default)"),
   make_option(c("--shortid"), action="store", default=TRUE, type='logical', help="Shorten H3 index name of grid cell labels on the map"),
-  make_option(c("--antimeridianfix"), action="store", default=TRUE, type='logical', help="Fix H3 polygons that cross the antimeridian"),
-  # make_option(c("-t", "--threads"), action="store", default=1L, type='integer', help="Number of CPU threads for arrow, default 4"),
-  make_option(c("-o", "--output"), action="store", default="Choropleth.html", type='character', help="Output file name")
+  make_option(c("--antimeridianfix"), action="store", default=TRUE, type='logical', help="Fix H3 polygons that cross the antimeridian")
 )
 opt <- parse_args(OptionParser(option_list=option_list))
 
-
-## Validation of the required argiments
-if(is.na(opt$observed)){
-  stop("Input file with observed PD indices is not specified.\n")
-}
-if(is.na(opt$sesscores)){
-  stop("Input file with SES-scores is not specified.\n")
-}
-if(is.na(opt$sigscores)){
-  stop("Input file with radnomization-based p-values is not specified.\n")
-}
-if(is.na(opt$reccounts)){
-  stop("Input file with the total number of GBIF-records per H3 cell is not specified.\n")
-}
-if(is.na(opt$output)){
-  stop("Output file is not specified.\n")
-}
-
-## Optional input files
-if(opt$canape   %in% "no_canape")  { opt$canape   <- NA }
-if(opt$hurlbert %in% "no_hurlbert"){ opt$hurlbert <- NA }
-
-
 ## Function to convert text "NA"s to NA
-to_na <- function(x){ 
+to_na <- function(x){
   if(x %in% c("NA", "null", "Null")){ x <- NA }
   return(x)
 }
 
+## Replaces "null"s from Nextflow with NA
+opt <- lapply(X = opt, FUN = to_na)
+
+## Validation of the required argiments
+if(is.na(opt$divestimates)){
+  stop("Input file with diversity estimates is not specified.\n")
+}
+
 ## Assign variables
-INPUTR      <- opt$observed       # observed results (raw index values)
-INPUTS      <- opt$sesscores      # standardized index values (SES)
-INPUTP      <- opt$sigscores      # randomisations for each index in SPATIAL_RESULTS
-NRECORDS    <- opt$reccounts      # total number of GBIF records per H3-cell
-CANAPE      <- opt$canape         # CANAPE results (from Biodiverse)
-HURLBERT    <- opt$hurlbert       # Hurlbert ES indices
-VARIABLES   <- opt$variables
-ISOLATEMAPS <- as.logical( opt$isolate_maps )
-RESOLUTION  <- as.integer(opt$resolution)
-CANAPESUPER <- as.logical( opt$canapesuper)
-PALETTE     <- opt$palette
-COLOR       <- opt$color
-BINS        <- as.numeric( opt$bins )
-COLORSES    <- opt$colorses
+INPUT          <- opt$divestimates
+VARIABLES      <- opt$variables
 REDUNDANCYTRSH <- as.numeric(to_na( opt$redundancy ))
-SHORTID <- as.logical( opt$shortid )
-ANTIFIX <- as.logical( opt$antimeridianfix )
-OUTPUT  <- opt$output
+SHORTID        <- as.logical( opt$shortid )
+ANTIFIX        <- as.logical( opt$antimeridianfix )
+
+## Hardcoded parameters
+PALETTE     <- "quantile"
+COLOR       <- "RdYlBu"
+BINS        <- 5
+COLORSES    <- "threat"
 
 ## Check the redundancy range
 if(!is.na(REDUNDANCYTRSH)){
@@ -137,383 +114,56 @@ if(!is.na(REDUNDANCYTRSH)){
 }
 
 ## Log assigned variables
-cat(paste("Input file (observed indices): ",  INPUTR,     "\n", sep=""))
-cat(paste("Input file (SES-scores): ",        INPUTS,     "\n", sep=""))
-cat(paste("Input file (p-values): ",          INPUTP,     "\n", sep=""))
-cat(paste("Input file (number of records): ", NRECORDS,   "\n", sep=""))
-
-if(!is.na(CANAPE)){
-cat(paste("Input file (CANAPE): ", CANAPE, "\n", sep=""))
-}
-
-if(!is.na(HURLBERT)){
-cat(paste("Input file (Hurlbert ES indices): ", HURLBERT, "\n", sep=""))
-}
-
-cat(paste("Spatial resolution: ",             RESOLUTION, "\n", sep=""))
-cat(paste("Indices to plot: ",                VARIABLES,  "\n", sep=""))
-cat(paste("Separate HTML file per variable: ",ISOLATEMAPS,"\n", sep=""))
-cat(paste("CANAPE superendemism enabled: ",   CANAPESUPER,"\n", sep=""))
-cat(paste("Color palette type: ",             PALETTE,    "\n", sep=""))
-cat(paste("Color gradient scheme: ",          COLOR,      "\n", sep=""))
-cat(paste("Number of color bins: ",           BINS,       "\n", sep=""))
-cat(paste("SES color palette: ",              COLORSES,   "\n", sep=""))
-cat(paste("Redundancy threshold: ",           REDUNDANCYTRSH, "\n", sep=""))
-cat(paste("Display short H3 index names: ",   SHORTID,    "\n", sep=""))
-cat(paste("Antimeridian fix: ",               ANTIFIX,    "\n", sep=""))
-cat(paste("Output file: ",                    OUTPUT,     "\n", sep=""))
-
-# CPUTHREADS <- as.numeric(opt$threads)
-# cat(paste("Number of CPU threads to use: ", CPUTHREADS, "\n", sep=""))
-
-
-cat("\n")
-
-
-############################################## Load packages
-
-cat("Loading R packages...\n")
-
-load_pckg <- function(pkg = "data.table"){
-  suppressPackageStartupMessages( library(package = pkg, character.only = TRUE) )
-  cat(paste(pkg, packageVersion(pkg), "\n"))
-}
-
-load_pckg("sf")
-load_pckg("h3")
-load_pckg("data.table")
-load_pckg("plyr")
-load_pckg("leaflet")
-load_pckg("mapview")
-
-cat("\n")
-
-
-## Set CPU thread pool
-# cat("Setting number of CPU threads to: ", CPUTHREADS, "\n")
-# setDTthreads(threads = CPUTHREADS)  # for data.table
-
-# ## Start local cluster
-# if(CPUTHREADS > 1){
-#   load_pckg("doFuture")
-#   registerDoFuture()
-#   plan(multicore, workers = CPUTHREADS)
-#   options(future.globals.maxSize = 1e10)
-# 
-#   parall <- TRUE
-# } else {
-#   parall <- FALSE
-# }
-
-
-############################################## Prepare data
-
-## Parameters for debugging
-# INPUTR    <- "RND_SPATIAL_RESULTS.csv"
-# INPUTS    <- "RND_rand--z_scores--SPATIAL_RESULTS.csv"
-# INPUTP    <- "RND_rand--SPATIAL_RESULTS.csv"    # "RND_rand--SPATIAL_RESULTS.csv"
-# CANAPE    <- "RND_rand--CANAPE--.csv"
-# HURLBERT  <- NA                                 # "RND_HURLBERT_ES.csv"
-# NRECORDS  <- "Record_counts_H3.RData"
-# VARIABLES <- "RICHNESS_ALL,PD,SES_PD,PD_P,ENDW_WE,SES_ENDW_WE,PE_WE,SES_PE_WE,ES_50,CANAPE,Redundancy"
-# ISOLATEMAPS <- FALSE
-# REDUNDANCYTRSH <- 0.7
-# RESOLUTION     <- 4
-# PALETTE  <- "quantile"
-# COLOR    <- "RdYlBu"
-# COLORSES <- "threat"
-# BINS     <- 5
-# SHORTID  <- TRUE
-# ANTIFIX  <- TRUE
-# CANAPESUPER <- TRUE
-# OUTPUT   <- "Choropleth.html"
-
-## Load input data
-cat("Loading Biodiverse results\n")
-
-## Raw indices
-cat("..Observed indices\n")
-res_r <- fread(INPUTR)            # RND_SPATIAL_RESULTS.csv
-
-## SES-scores
-cat("..SES-scores\n")
-res_s <- fread(INPUTS)            # RND_rand--z_scores--SPATIAL_RESULTS.csv
-
-## P-values
-cat("..P-values\n")
-res_p <- fread(INPUTP)            # RND_rand--p_rank--SPATIAL_RESULTS.csv
-
-## CANAPE results
-# if(!is.na(CANAPE)){
-#   cat("..CANAPE\n")
-#   canape <- fread(CANAPE)       # RND_rand--CANAPE--.csv
-# }
-
-## Hurlbert results
-if(!is.na(HURLBERT)){
-  cat("..Hurlbert\n")
-  hurlbert <- fread(HURLBERT)     # RND_rand--HURLBERT_ES.csv
-
-  ## Rename columns
-  h_cols <- colnames(hurlbert)[ ! colnames(hurlbert) %in% c("ELEMENT", "Axis_0", "Axis_1") ]
-  setnames(
-    x = hurlbert,
-    old = h_cols,
-    new = paste0("ES_", h_cols))
-}
-
-
-## Rename coordinates (from Biodiverse basedata)
-setnames(x = res_r,
-  old = c("Axis_1", "Axis_0"),
-  new = c("Latitude", "Longitude"))
-
-setnames(x = res_s,
-  old = c("Axis_1", "Axis_0"),
-  new = c("Latitude", "Longitude"))
-
-setnames(x = res_p,
-  old = c("Axis_1", "Axis_0"),
-  new = c("Latitude", "Longitude"))
-
-if(!is.na(HURLBERT)){
-setnames(x = hurlbert,
-  old = c("Axis_1", "Axis_0"),
-  new = c("Latitude", "Longitude"))
-}
+cat(paste("Diversity estimates: ",          INPUT,          "\n", sep=""))
+cat(paste("Indices to plot: ",              VARIABLES,      "\n", sep=""))
+cat(paste("Redundancy threshold: ",         REDUNDANCYTRSH, "\n", sep=""))
+cat(paste("Display short H3 index names: ", SHORTID,        "\n", sep=""))
+cat(paste("Antimeridian fix: ",             ANTIFIX,        "\n", sep=""))
 
 
 
-## Test if the first column cotains valid H3 IDs
-if( h3_is_valid(res_r[[1,1]]) ){
-  colnames(res_r)[1] <- "H3"
-  colnames(res_z)[1] <- "H3"
-  colnames(res_p)[1] <- "H3"
-  if(!is.na(HURLBERT)){ colnames(hurlbert)[1] <- "H3" }
-} else {
-  ## Get H3 IDs for grid cells
-  cat("H3 index was not found in the data\n")
-  cat("..Indexing geo-coordinates\n")
-  res_r[ , H3 := h3::geo_to_h3(res_r[, .(Latitude, Longitude)], res = RESOLUTION) ]
-  res_s[ , H3 := h3::geo_to_h3(res_s[, .(Latitude, Longitude)], res = RESOLUTION) ]
-  res_p[ , H3 := h3::geo_to_h3(res_p[, .(Latitude, Longitude)], res = RESOLUTION) ]
-  if(!is.na(HURLBERT)){ hurlbert[ , H3 := h3::geo_to_h3(hurlbert[, .(Latitude, Longitude)], res = RESOLUTION) ] }
-}
+##########################################################
+########################################################## Load and prepare data
+##########################################################
 
-## Remove redundant columns
-cat("Removing redundant columns\n")
-res_r[, c("ELEMENT", "Latitude", "Longitude") := NULL ]
-res_s[, c("ELEMENT", "Latitude", "Longitude") := NULL ]
-res_p[, c("ELEMENT", "Latitude", "Longitude") := NULL ]
-if(!is.na(HURLBERT)){ hurlbert[, c("ELEMENT", "Latitude", "Longitude") := NULL ] }
-
-
-## Rename SES-scores (add `SES_` prefix)
-setnames(res_s,
-  old = colnames(res_s)[ ! colnames(res_s) %in% "H3" ],
-  new = paste0("SES_", colnames(res_s)[ ! colnames(res_s) %in% "H3" ]))
-
-## Merge the data into a single table
-cat("Merging data into a single table\n")
-res <- merge(x = res_r, y = res_s, by = "H3", all.x = TRUE)
-
-if(!is.na(HURLBERT)){
-  res <- merge(x = res, y = hurlbert, by = "H3", all.x = TRUE)
-}
-
-## Clean up
-rm(res_r, res_s)
-if(!is.na(HURLBERT)){ rm(hurlbert) }
+cat("\n\n-------- Preparing data --------\n\n")
 
 ## If there are multiple variables selected - split them
 if(any(grepl(pattern = ",", x = VARIABLES))){
-  VARIABLES <- strsplit(x = VARIABLES, split = ",")[[1]]
+  VARIABLES <- unique( strsplit(x = VARIABLES, split = ",")[[1]] )
+  if(length(VARIABLES) > 2){
+    stop("More than two variables selected (currently not supported)\n")
+  }
 }
 
-## ?? Remove "monomorphic" variables
-## They could cause an error with color gradients and binning
+## Load input data
+cat("..Loading diversity estimates\n")
 
-## CANAPE (categorical analysis of neo- and paleoendemism; Mishler et al., 2014)
-if("CANAPE" %in% VARIABLES){
-  cat("Preparing data for CANAPE analysis\n")
-  do_CANAPE <- TRUE
-
-  required_vars <- c(
-    "P_PHYLO_RPD2", 
-    "P_PD_P", "P_PE_WE_P", "P_PD_P_per_taxon",
-    "P_PHYLO_RPE2",
-    "P_PHYLO_RPE_NULL2")
-
-  ## Check if we have all the required variables in the data
-  if(any(! required_vars %in% colnames(res_p) )){
-    cat("..WARNING: some variables required for the CANAPE analysis are missing from the data!\n")
-    cat(paste(required_vars[ ! required_vars %in% colnames(res_p) ], collapse = ", "), "\n")
-    cat("..Please add `calc_phylo_rpd2,calc_phylo_rpe2` to the `indices` parameter of the pipeline\n")
-    cat("..Skipping the CANAPE analysis\n")
-    do_CANAPE <- FALSE
-  } else {
-    
-    cat("..Running the CANAPE analysis\n")
-
-    ## Significance-testing and thresholds are based on the code by Nunzio Knerr and Shawn Laffan
-    # https://github.com/NunzioKnerr/biodiverse_pipeline/blob/0e3eb237870a3a72a0be9939062123eee488e960/R_release/load_biodiverse_results_and_report_on_CANAPE_by_taxa.R#L38
-    ## Two-tailed test for RPD
-    sig1 <- function(x){
-      if (x >= 0.99) {
-        return("VeryHighlySig")
-      } else if (x >= 0.975){
-        return ("HighlySig")
-      } else if (x <= 0.01){
-        return ("VerySigLow")
-      } else if (x <= 0.025){
-        return ("SigLow")
-      } else {
-        return("NotSig")
-      }
-    }
-
-    ## Two-pass test for RPE
-    sig2 <- function(x, y, z, with_super = TRUE){
-      # x = P_PE_WE_P; y = P_PHYLO_RPE_NULL2; z = P_PHYLO_RPE2
-
-      if (is.na(x)) { x = 0   }
-      if (is.na(y)) { y = 0   }
-      if (is.na(z)) { z = 0.5 }
-
-      if(with_super == TRUE){
-        if (x < 0.95 & y < 0.95) {
-          return("NotSignificant")
-        } else if (z <= 0.025){
-          return ("Neo_endemism")
-        } else if (z >= 0.975){
-          return ("Paleo_endemism")
-        } else if (x >= 0.99 & y >= 0.99){
-          return ("Super_endemism")
-        } else {
-          return("Mixed_endemism")
-        }
-      }
-
-      if(with_super == FALSE){
-        if (x <= 0.95 & y <= 0.95) {
-           return ("NotSignificant")
-         } else if (z < 0.025) {
-           return ("Neo_endemism")         # RPE < 0.025
-         } else if (z > 0.975) {
-           return ("Paleo_endemism")       # RPE > 0.975
-         } else {
-           return ("Mixed_endemism")
-         }
-      }
-    } # end of sig2
-
-    ## Vectorize the functions
-    sig1 <- Vectorize(sig1)
-    sig2 <- Vectorize(sig2)
-
-    ## Step 1
-    # cat("...Step 1 - Parsing significance tests\n")
-    # canape_data <- data.table(
-    #   H3 = res_p[[ "H3" ]],
-    #   P_PHYLO_RPD1_SIG = sig1( res_p[[ "P_PHYLO_RPD1" ]] ),
-    #   P_PHYLO_RPD2_SIG = sig1( res_p[[ "P_PHYLO_RPD2" ]] ),
-    #   P_PD_P_SIG = sig1( res_p[[ "P_PD_P" ]] ),
-    #   P_PE_WE_P_SIG = sig1( res_p[[ "P_PE_WE_P" ]] ),
-    #   P_PD_P_per_taxon_SIG = sig1( res_p[[ "P_PD_P_per_taxon" ]] ),
-    #   P_PHYLO_RPE2_ONE_STEP_SIG = sig1( res_p[[ "P_PHYLO_RPE2" ]] )
-    #   )
-
-    ## Step 2
-    # cat("...Step 2 - Inferring endemism type\n")
-
-    ## Null model of PD evenly distributed across terminals, but with the same range per terminal and where ancestral nodes are of zero length
-    ## P_PHYLO_RPE1_SIG
-    # canape_data$CANAPE <- sig2(
-    #   res_p[[ "P_PE_WE_P" ]],
-    #   res_p[[ "P_PHYLO_RPE_NULL1" ]],
-    #   res_p[[ "P_PHYLO_RPE1" ]])
-
-    ## Null model where PE is calculated using a tree where all branches are of equal length
-    ## P_PHYLO_RPE2_SIG
-    # canape_data$CANAPE <- sig2(
-    #   res_p[[ "P_PE_WE_P" ]],
-    #   res_p[[ "P_PHYLO_RPE_NULL2" ]],
-    #   res_p[[ "P_PHYLO_RPE2" ]])
-
-    cat("...Inferring endemism type\n")
-  
-    canape_data <- data.table(
-      H3 = res_p[[ "H3" ]],
-      CANAPE = sig2(
-          res_p[[ "P_PE_WE_P" ]],
-          res_p[[ "P_PHYLO_RPE_NULL2" ]],
-          res_p[[ "P_PHYLO_RPE2" ]],
-          with_super = CANAPESUPER)
-      )
-
-    canape_data$CANAPE <- factor(canape_data$CANAPE,
-      levels = c("Neo_endemism", "Paleo_endemism", "NotSignificant", "Mixed_endemism", "Super_endemism"))
-
-    ## Add CANAPE to the main table
-    res <- merge(x = res, y = canape_data, by = "H3", all.x = TRUE)
-
-  } # end of CANAPE
-
+tab_ext <- tolower( tools::file_ext(INPUT) )
+if(tab_ext %in% "qs"){
+  res <- qs::qread(INPUT)
+} else if(tab_ext %in% c("txt", "tsv", "txt.gz", "tsv.gz", "gz")){
+  res <- fread(INPUT, sep = "\t")
 } else {
-  cat("Skipping the CANAPE analysis\n")
-  do_CANAPE <- FALSE
+  cat("The specified diversity estimates file has an unsupported extension.\n", file=stderr())
+  cat("Supported extensions (case-insensitive): ", paste(c("qs", "txt"), collapse = ", "), "\n")
+  stop()
 }
-
-
-### Estimate sampling redundancy for each cell (how well the are is sampled) 
-###  = 1 - (Richness / Number of specimens)
-### (see Mishler et al., 2020; DOI: 10.1111/jse.12590) 
-cat("Estimating sampling redundancy\n")
-if(!"RICHNESS_ALL" %in% colnames(res)){
-  cat("..WARNING: species richness is missing from the estimated indices!\n")
-  cat("..Skipping redundancy estimation\n")
-
-  ## Remove Redundancy variable from the list (if it's there)
-  VARIABLES <- VARIABLES[ ! VARIABLES %in% "Redundancy" ]
-
-} else {
-
-  ## Loading number of records
-  cat("..Loading a file with the total number of GBIF-records per H3-cell\n")
-  NRECORDS <- readRDS(NRECORDS)
-
-  ## Add N to the main table
-  cat("..Adding N records to the main table\n")
-  res <- merge(x = res, y = NRECORDS[, .(H3, NumRecords)],
-               by = "H3", all.x = TRUE)
-  
-  ## Calc the redundancy
-  cat("..Estimating the index\n")
-  res[, Redundancy := ( 1 - (RICHNESS_ALL / NumRecords) )]
-
-  ## Add the index to the VARIABLES
-  # VARIABLES <- c(VARIABLES, "Redundancy")
-}
-
 
 ## Check if the selected index is in the tables
-colz <- colnames(res)
-if(any(!VARIABLES %in% colz)){
-  cat("Some of the selected indices are not present in tables with results!\n")
-  cat("Please check the spelling of index names or enable their estimation in Biodiverse.\n")
-  missing <- VARIABLES[ ! VARIABLES %in% colz ]
-  cat("Indices missing: ", paste(missing, collapse = ", "), "\n")
-
-  ## Exclude missing indices
-  VARIABLES <- VARIABLES[ ! VARIABLES %in% missing ]
+if(any(!VARIABLES %in% colnames(res))){
+  cat("The selected indices are not present in the diversity estimates table!\n")
+  cat("Please check the spelling of index names\n")
+  stop()
 }
 
-## Check the data
-if(length(VARIABLES) == 0){
-  stop("None of the selected indices were found in the results! Nothing to plot.\n")
-}
+## Subset data
+cat("..Subsetting data\n")
+clz <- c("H3", "Redundancy", VARIABLES)
+clz <- clz[ clz %in% colnames(res) ]
+res <- res[, ..clz]
 
-## Remove gridcell with the redundancy index below the specified threshold
+## Remove cells with the redundancy index below the specified threshold
 if(REDUNDANCYTRSH > 0 & "Redundancy" %in% colnames(res)){
   cat("Removing grid cells with low redundancy index\n")
   cat("..The specified threshold is ", REDUNDANCYTRSH, "\n")
@@ -531,33 +181,19 @@ if(!nrow(res) > 0){
 }
 
 
-cat("Preparing data table for export\n")
+##########################################################
+########################################################## Visualization
+##########################################################
 
-## Add grid cell coordinates
-cat(".. Adding geo-coordinates for grid cell centers\n")
-res[, c("Latitude", "Longitude") := as.data.table(h3::h3_to_geo(H3)) ]
-
-## Reorder columns
-cat(".. Reordering columns\n")
-setcolorder(res, c("H3", "Latitude", "Longitude"))
-
-## Export the data
-cat("Exporting the data table\n")
-fwrite(x = res, file = "Biodiverse_results_merged.txt", sep = "\t")
-
+cat("\n\n-------- Visualization --------\n\n")
 
 ## Prepare spatial polygons
-cat("Preparing gridcell polygons\n")
+cat("..Preparing spatial data\n")
 H3_poly <- h3_to_geo_boundary_sf(res$H3)
 
 cat("..Adding diversity estimates to polygons\n")
-
-if("NumRecords" %in% colnames(res)){
-  vars <- c(VARIABLES, "NumRecords")
-  H3_poly <- cbind(H3_poly, res[, ..vars])
-} else {
-  H3_poly <- cbind(H3_poly, res[, ..VARIABLES])
-}
+vars <- colnames(res)[! colnames(res) %in% "H3" ]
+H3_poly <- cbind(H3_poly, res[, ..vars])     
 
 ## Assign rownames as H3 grid cell IDs
 cat("..Adding H3 cell names\n")
@@ -568,38 +204,21 @@ if(SHORTID == TRUE){
   rownames(H3_poly) <- res$H3
 }
 
-cat("..Exporting polygons with divsity estimates in GeoPackage format\n")
-## (using sf + GPKG driver of GDAL library)
-st_write(
-  obj = H3_poly,
-  dsn = "Diversity_estimates.gpkg",
-  layer = "diversity_estimates")
-
-
 ## Fix H3 polygons that cross the antimeridian by cutting them in two
 if(ANTIFIX == TRUE){
   cat("..Fixing antimeridian issue\n")
   H3_poly <- st_wrap_dateline(H3_poly, options = c("WRAPDATELINE=YES", "DATELINEOFFSET=180"))
 }
 
-
 # plot(H3_poly)
-
-
-## Find plot limits
-# boxx <- st_bbox(H3_poly)
-# xx <- pretty(c(boxx["xmin"], boxx["xmax"]))
-# yy <- pretty(c(boxx["ymin"], boxx["ymax"]))
-
 
 
 ############################################## Leaflet choropleths
 
-cat("Creating leaflet map\n")
+cat("..Creating leaflet map\n")
 
 ## Set value for the minZoom and maxZoom settings
 leaflet(options = leafletOptions(minZoom = 0, maxZoom = 18))
-
 
 ## Function to create a label with single variable
 single_label <- function(num, name){
@@ -627,11 +246,6 @@ cat("..Generating polygon labels\n")
 labels <- alply(.data = VARIABLES, .margins = 1, .fun = function(v){
   single_label(num = H3_poly[[ v ]], name = v)
   })
-
-## Add number of GBIF-records to the labels
-labels <- c(labels, 
-  list( single_label(num = H3_poly[[ "NumRecords" ]], name = "Number of records"))
-  )
 
 ## Add H3 index to the labels
 labels <- c(labels, 
@@ -973,8 +587,6 @@ m <- m %>%
   hideGroup(VARIABLES[-1])
 
 
-
-
 cat("..Exporting the results\n")
 
 ## Use mapdeck as the rendering platform instead of leaflet
@@ -983,99 +595,26 @@ cat("..Exporting the results\n")
 cat("...Exporting Choropleth map in HTML\n")
 
 ## Save a leaflet map as .html
-## By default, all variables are overlaid and saved into a single output file
-if(ISOLATEMAPS == FALSE){
-
-  mapshot(
-    m,
-    url  = OUTPUT,
-    file = NULL,
-    selfcontained = TRUE
-  )
-
-} else {
-
-  ### Generate individual HTML files for each variable
-
-
-  ## Form the leaflet object, get slot names and description of their content
-  info <- llply(.data = m$x$calls, .fun = function(x){ 
-    
-    method <- x$method
-
-    if(method %in% "addPolygons"){
-      varname <- x$args[[3]]
-    } else if(method %in% "addLegend"){
-      varname <- x$args[[1]]$group
-    } else {
-      varname <- NA
-    }
-
-    res <- data.table(
-      Method   = method,
-      Variable = varname)
-
-    return(res)
-  })
-
-  info <- rbindlist(info)
-  info[ , SlotID := 1:length(mm$x$calls) ]
-
-  ## Function to extract a variable of interes and remove the other variables
-  get_var <- function(v = "PD"){
-    mm <- copy(m)
-    selected_slots <- info[ Variable %in% v | Method %in% "addTiles" ]$SlotID
-    mm$x$calls <- mm$x$calls[ selected_slots ]
-    return(mm)
-  }
-
-  for(i in VARIABLES){
-    
-    cat(".... Saving mapview for ", i, "\n")
-    mapshot(
-      x    = get_var(v = i),
-      url  = sub(
-        pattern     = ".html",
-        replacement = paste0("_", i, ".html"),
-        x           = OUTPUT),
-      file = NULL,
-      selfcontained = TRUE
-    )
-
-  }
-  cat(".... All variables processed\n")
-}
-
+mapshot(
+  m,
+  url  = paste0("Choropleth_", opt$variables, ".html"),   # NB. use non-splitted variable name as provided by the user
+  file = NULL,
+  selfcontained = TRUE)
 
 # remove_controls = c("zoomControl", "layersControl",
 #    "homeButton", "scaleBar", "drawToolbar", "easyButton")
 
-
 # library(htmlwidgets)
 # saveWidget(m, file="m.html")
+
 
 cat("...Exporting Leaflet object\n")
 
 attr(m, which = "VARIABLES") <- VARIABLES
 
-saveRDS(object = m, file = "Leaflet_object.RData", compress = "xz")
+# saveRDS(object = m, file = "Leaflet_object.RData", compress = "xz")
 
+qs::qsave(m, paste0("Leaflet_", opt$variables, ".qs"),
+  preset = "custom", algorithm = "zstd", compress_level = 14L)
 
 cat("Plotting finished\n")
-
-
-#####################
-
-cat("All done!\n")
-
-## Check time
-end_time <- Sys.time()
-
-tmm <- as.numeric(difftime(end_time, start_time, units = "min"))
-cat("\nElapsed time: ", tmm, " minutes\n")
-
-
-cat("\n")
-cat("Session info:\n")
-sessionInfo()
-cat("\n")
