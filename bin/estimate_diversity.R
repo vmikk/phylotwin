@@ -214,4 +214,20 @@ st_write(
   layer = "diversity_estimates")      
 
 
+##########################################################
+########################################################## Export results
+##########################################################
+
+cat("\n\n-------- Exporting results --------\n\n")
+
+cat("..Exporting tab-delimited file\n")
+fwrite(x = RES, file = paste0(OUTPUT, ".txt"), sep = "\t")
+
+cat("..Exporting QS file\n")
+qs::qsave(RES, paste0(OUTPUT, ".qs"), preset = "custom", algorithm = "zstd", compress_level = 14L, nthreads = THREADS)
+
+
+
+
+
 
