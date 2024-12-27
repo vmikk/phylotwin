@@ -89,11 +89,6 @@ workflow {
   ch_poly   = params.polygon ? Channel.fromPath(params.polygon) : Channel.fromPath("no_polygon", checkIfExists: false)
   ch_spkeys = params.specieskeys ? Channel.fromPath(params.specieskeys) : Channel.fromPath("no_specieskeys", checkIfExists: false)
 
-  ch_occ.view()
-  ch_tree.view()
-  ch_poly.view()
-  ch_spkeys.view()
-
   // Pipeline data
   ch_data = Channel.fromPath(params.data, type: 'dir', checkIfExists: true)
   // ch_taxatables   = params.data + "/TaxonomyTables"
@@ -102,6 +97,12 @@ workflow {
 
   // Subset data
   subset_data(ch_occ, ch_spkeys, ch_poly)
+
+  // Estimate diversity
+  estimate_diversity(
+    subset_data.out.occ_counts_long,
+    ch_tree
+  )
 
 
 // On completion
