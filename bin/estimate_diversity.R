@@ -55,9 +55,11 @@ OCC     <- opt$input
 TREE    <- opt$tree
 DIV     <- opt$div
 THREADS <- opt$threads
+OUTPUT  <- opt$output
 
 cat("\nParameters parsed:\n")
 cat("  Input:", OCC, "\n")
+cat("  Output prefix:", OUTPUT, "\n")
 cat("  Tree:", TREE, "\n")
 cat("  Diversity metrics:", DIV, "\n")
 cat("  Number of threads:", THREADS, "\n")
