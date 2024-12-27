@@ -83,7 +83,10 @@ option_list <- list(
     make_option("--maxyear", action="store", default=NA,   type='integer', help="Maximum year of occurrence"),
     make_option("--basisofrecord", action="store", default=NA, type='character', help="Basis of record to include from the data"),
 
+    ## Miscellaneous parameters
     make_option("--data", action="store", default="./data", type='character', help="Path to the internal data of the pipeline"),
+    make_option("--duckdb_memory", action="store", default=NA, type='character', help="Memory limit for DuckDB (e.g., 10GB)"),
+    make_option("--threads", action="store", default=2, type='integer', help="Number of CPUs to use")
 )
 
 ## Parse the command line arguments
@@ -194,6 +197,9 @@ MAXYEAR <- as.numeric(to_na( opt$maxyear) )
 BASISOFRECORD <- to_na( opt$basisofrecord )
 
 DATA <- opt$data
+DUCKDB_MEMORY <- to_na( opt$duckdb_memory )
+THREADS <- as.integer( opt$threads )
+
 cat("\nInput-output parameters:\n")
 cat("  Input directory:", INPDIR, "\n")
 cat("  Output prefix:", OUTPUT, "\n")
@@ -218,7 +224,10 @@ cat("  Minimum year:", MINYEAR, "\n")
 cat("  Maximum year:", MAXYEAR, "\n")
 cat("  Basis of record:", BASISOFRECORD, "\n")
 
-cat("\nInternal data of the pipeline: ", DATA, "\n")
+cat("\nMiscellaneous parameters:\n")
+cat("  Internal data of the pipeline: ", DATA, "\n")
+cat("  DuckDB memory limit:", DUCKDB_MEMORY, "\n")
+cat("  Number of threads:", THREADS, "\n")
 
 
 ## Specify the number of threads for data.table
@@ -547,6 +556,15 @@ cat("\nInitializing DuckDB\n")
 ## Initialize DuckDB in-memory database
 con <- dbConnect(duckdb::duckdb(), dbdir = ":memory:")
 
+## Set threads and memory limit
+if(! is.na(THREADS)){ dbExecute(con, sprintf("SET threads TO %d;", THREADS)) }
+if(! is.na(DUCKDB_MEMORY)) { dbExecute(con, sprintf("SET memory_limit = '%s';", DUCKDB_MEMORY)) }
+
+## Set extension directory
+# if(! is.na(EXT_DIR)) { dbExecute(con, sprintf("SET extension_directory='%s';", EXT_DIR)) }
+
+## Load H3 extension
+# dbExecute(con, "LOAD h3;")
 
 cat("Preparing the query for DuckDB\n")
 
