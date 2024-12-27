@@ -190,3 +190,26 @@ RES[, Redundancy := ( 1 - (Richness / NumRecords) )]
 
 
 
+
+
+##########################################################
+########################################################## Prepare spatial data
+##########################################################
+
+cat("\n\n-------- Preparing spatial data --------\n\n")
+
+cat("..Preparing H3 polygons\n")
+H3_poly <- h3_to_geo_boundary_sf(RES$H3)
+
+cat("..Adding diversity estimates to H3 polygons\n")
+vars <- colnames(RES)[! colnames(RES) %in% "H3" ]
+H3_poly <- cbind(H3_poly, RES[, ..vars])     
+
+cat("..Exporting polygons with divsity estimates in GeoPackage format\n")
+st_write(
+  obj   = H3_poly,
+  dsn   = paste0(OUTPUT, ".gpkg"),
+  layer = "diversity_estimates")      
+
+
+
