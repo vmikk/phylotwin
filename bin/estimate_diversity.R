@@ -168,3 +168,20 @@ if("SES.MNTD" %in% MEASURES){
 
 
 
+######## Combine results
+
+cat("Combining results\n")
+RES <- do.call("cbind", RES)
+RES <- data.table(H3 = rownames(datm), RES)
+
+cat("..Adding number of records per H3 cell\n")
+RES <- merge(x = RES, y = num_records, by = "H3", all.x = TRUE)
+
+### Estimate sampling redundancy for each cell (how well the are is sampled) 
+###  = 1 - (Richness / Number of specimens)
+### (see Mishler et al., 2020; DOI: 10.1111/jse.12590) 
+cat("..Estimating redundancy index\n")
+RES[, Redundancy := ( 1 - (Richness / NumRecords) )]
+
+
+
