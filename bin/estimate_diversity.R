@@ -43,6 +43,11 @@ to_na <- function(x){
 opt <- lapply(X = opt, FUN = to_na)
 
 
+## Parameters validation
+if(is.na(opt$input)) { cat("Input is not specified.\n", file=stderr()); stop() }
+if(is.na(opt$output)){ cat("Output is not specified.\n", file=stderr()); stop() }
+if(is.na(opt$tree))  { cat("No phylogenetic tree specified.\n", file=stderr()); stop() }
+
 
 
 ## Input parameters
