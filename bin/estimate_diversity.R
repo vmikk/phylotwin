@@ -12,6 +12,8 @@ cat("Loading packages:\n")
 load_pckg("optparse")
 load_pckg("data.table")
 load_pckg("PhyloMeasures")
+load_pckg("sf")
+load_pckg("h3")
 load_pckg("ape")
 load_pckg("arrow")
 load_pckg("dplyr")
@@ -219,6 +221,15 @@ st_write(
 ##########################################################
 
 cat("\n\n-------- Exporting results --------\n\n")
+cat("Exporting tab-delimited file\n")
+
+## Add grid cell coordinates
+cat("..Adding geo-coordinates for grid cell centers\n")
+RES[, c("Latitude", "Longitude") := as.data.table(h3::h3_to_geo(H3)) ]
+ 
+## Reorder columns
+cat("..Reordering columns\n")
+setcolorder(RES, c("H3", "Latitude", "Longitude"))
 
 cat("..Exporting tab-delimited file\n")
 fwrite(x = RES, file = paste0(OUTPUT, ".txt"), sep = "\t")
