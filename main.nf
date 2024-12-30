@@ -78,6 +78,29 @@ process estimate_diversity {
 }
 
 
+// Plot diversity indices (interactive map - Leaflet-based choropleth)
+process viz_leaflet {
+
+    input:
+      path divestimates  // table with diversity estimates
+      val index          // index name
+
+    output:
+      path "Choropleth_*.html", emit: choropleth
+      path "Leaflet_*.qs",      emit: leaflet
+
+    script:
+    """
+    Visualization_Leaflet.R \
+      --divestimates    ${divestimates} \
+      --variables       ${index} \
+      --shortid         TRUE \
+      --antimeridianfix TRUE
+
+    """
+}
+
+
 
 workflow {
 
