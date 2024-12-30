@@ -127,6 +127,18 @@ workflow {
     ch_tree
   )
 
+  // Prepare channel with diversity index names for plotting
+  // ch_indices = Channel.from(params.div)
+  ch_indices = Channel.of("Richness", "PD", "SES.PD")    // for debugging
+
+  // Plot diversity indices
+  viz_leaflet(
+    estimate_diversity.out.qs,
+    ch_indices
+  )
+}
+
+
 
 // On completion
 workflow.onComplete {
