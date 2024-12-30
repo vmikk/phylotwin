@@ -108,6 +108,9 @@ if(is.na(opt$inpdir)){ cat("Input directory with pre-processed species occurrenc
 if(is.na(opt$output)){ cat("Output prefix is not specified.\n", file=stderr()); stop() }
 if(!is.na(opt$specieskeys) && !file.exists(opt$specieskeys)){ cat("The specified file with specieskeys does not exist.\n", file=stderr()); stop() }
 
+if(is.na(opt$resolution)){ cat("H3 resolution is not specified.\n", file=stderr()); stop() }
+if(opt$resolution < 1 || opt$resolution > 6){ cat("H3 resolution must be between 1 and 6.\n", file=stderr()); stop() }
+
 if(!is.na(opt$latmin) && (opt$latmin < -90 || opt$latmin > 90)){ cat("The minimum latitude is out of range.\n", file=stderr()); stop() }
 if(!is.na(opt$latmax) && (opt$latmax < -90 || opt$latmax > 90)){ cat("The maximum latitude is out of range.\n", file=stderr()); stop() }
 if(!is.na(opt$latmin) && !is.na(opt$latmax) && opt$latmin > opt$latmax){ cat("Spatial filter: The minimum latitude is greater than the maximum latitude.\n", file=stderr()); stop() }
