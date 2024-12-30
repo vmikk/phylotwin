@@ -50,6 +50,8 @@ if(is.na(opt$input)) { cat("Input is not specified.\n", file=stderr()); stop() }
 if(is.na(opt$output)){ cat("Output is not specified.\n", file=stderr()); stop() }
 if(is.na(opt$tree))  { cat("No phylogenetic tree specified.\n", file=stderr()); stop() }
 
+## Default diversity metrics
+if(is.null(opt$div)){ opt$div <- "PD,SES.PD" }
 
 
 ## Input parameters
@@ -221,6 +223,10 @@ st_write(
 ##########################################################
 
 cat("\n\n-------- Exporting results --------\n\n")
+
+cat("Exporting QS file\n")
+qs::qsave(RES, paste0(OUTPUT, ".qs"), preset = "custom", algorithm = "zstd", compress_level = 14L, nthreads = THREADS)
+
 cat("Exporting tab-delimited file\n")
 
 ## Add grid cell coordinates
@@ -233,12 +239,4 @@ setcolorder(RES, c("H3", "Latitude", "Longitude"))
 
 cat("..Exporting tab-delimited file\n")
 fwrite(x = RES, file = paste0(OUTPUT, ".txt"), sep = "\t")
-
-cat("..Exporting QS file\n")
-qs::qsave(RES, paste0(OUTPUT, ".qs"), preset = "custom", algorithm = "zstd", compress_level = 14L, nthreads = THREADS)
-
-
-
-
-
 
