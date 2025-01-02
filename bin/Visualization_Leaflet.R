@@ -75,7 +75,7 @@ option_list <- list(
   make_option(c("-v", "--variables"),    action="store", default="PD", type='character', help="Diversity variables to plot (comma-separated entries)"),
   make_option(c("-j", "--redundancy"), action="store", default=0, type='double', help="Redundancy threshold for hiding the grid cells with low number of records (disabled by default)"),
   make_option(c("--shortid"), action="store", default=TRUE, type='logical', help="Shorten H3 index name of grid cell labels on the map"),
-  make_option(c("--antimeridianfix"), action="store", default=TRUE, type='logical', help="Fix H3 polygons that cross the antimeridian")
+  make_option(c("--saveqs"), action="store", default=FALSE, type='logical', help="Save the Leaflet data in QS format")
 )
 opt <- parse_args(OptionParser(option_list=option_list))
 
@@ -99,6 +99,7 @@ VARIABLES      <- opt$variables
 REDUNDANCYTRSH <- as.numeric(to_na( opt$redundancy ))
 SHORTID        <- as.logical( opt$shortid )
 ANTIFIX        <- as.logical( opt$antimeridianfix )
+SAVEQS         <- as.logical( opt$saveqs )
 
 ## Hardcoded parameters
 PALETTE     <- "quantile"
@@ -119,7 +120,7 @@ cat(paste("Indices to plot: ",              VARIABLES,      "\n", sep=""))
 cat(paste("Redundancy threshold: ",         REDUNDANCYTRSH, "\n", sep=""))
 cat(paste("Display short H3 index names: ", SHORTID,        "\n", sep=""))
 cat(paste("Antimeridian fix: ",             ANTIFIX,        "\n", sep=""))
-
+cat(paste("Save QS data: ",                 SAVEQS,         "\n", sep=""))
 
 
 ##########################################################
@@ -608,13 +609,15 @@ mapshot(
 # saveWidget(m, file="m.html")
 
 
-cat("...Exporting Leaflet object\n")
+if(SAVEQS == TRUE){
+  cat("...Exporting Leaflet object\n")
 
-attr(m, which = "VARIABLES") <- VARIABLES
+  attr(m, which = "VARIABLES") <- VARIABLES
 
-# saveRDS(object = m, file = "Leaflet_object.RData", compress = "xz")
+  # saveRDS(object = m, file = "Leaflet_object.RData", compress = "xz")
 
-qs::qsave(m, paste0("Leaflet_", opt$variables, ".qs"),
-  preset = "custom", algorithm = "zstd", compress_level = 14L)
+  qs::qsave(m, paste0("Leaflet_", opt$variables, ".qs"),
+    preset = "custom", algorithm = "zstd", compress_level = 14L)
+}
 
 cat("Plotting finished\n")
