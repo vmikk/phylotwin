@@ -149,32 +149,31 @@ cat("..Estimating species richness\n")
 RES <- c(RES, list(Richness = rowSums(datt[,-1]) ))
 
 
-
 ######## PhyloMeasure-based indices
 
 if("PD" %in% MEASURES){
-  cat("..Estimating PD\n")
+  cat("..Estimating PD (phylogenetic diversity)\n")
   RES <- c(RES, list(PD = PhyloMeasures::pd.query(tree = tree, matrix = datm) ))
 }
 if("MPD" %in% MEASURES){
-  cat("..Estimating MPD\n")
+  cat("..Estimating MPD (mean pairwise distance)\n")
   RES <- c(RES, list(MPD = PhyloMeasures::mpd.query(tree = tree, matrix = datm) ))
 }
 if("MNTD" %in% MEASURES){
-  cat("..Estimating MNTD\n")
+  cat("..Estimating MNTD (mean nearest taxon distance)\n")
   RES <- c(RES, list(MNTD = PhyloMeasures::mntd.query(tree = tree, matrix = datm) ))
 }
 
 if("SES.PD" %in% MEASURES){
-  cat("..Estimating SES.PD\n")
+  cat("..Estimating SES.PD (standardized effect size of PD)\n")
   RES <- c(RES, list(SES.PD = PhyloMeasures::pd.query(tree = tree, matrix = datm, standardize = T) ))
 }
 if("SES.MPD" %in% MEASURES){
-  cat("..Estimating SES.MPD\n")
+  cat("..Estimating SES.MPD (standardized effect size of MPD)\n")
   RES <- c(RES, list(SES.MPD = PhyloMeasures::mpd.query(tree = tree, matrix = datm, standardize = T) ))
 }
 if("SES.MNTD" %in% MEASURES){
-  cat("..Estimating SES.MNTD\n")
+  cat("..Estimating SES.MNTD (standardized effect size of MNTD)\n")
   RES <- c(RES, list(SES.MNTD = PhyloMeasures::mntd.query(tree = tree, matrix = datm, standardize = T) ))
 }
 
