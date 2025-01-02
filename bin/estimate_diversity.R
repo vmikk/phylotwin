@@ -13,12 +13,14 @@ load_pckg("optparse")
 load_pckg("data.table")
 load_pckg("PhyloMeasures")
 load_pckg("phyloregion")
+load_pckg("canaper")
 load_pckg("sf")
 load_pckg("h3")
 load_pckg("ape")
 load_pckg("arrow")
 load_pckg("dplyr")
 load_pckg("qs")
+load_pckg("future")
 
 cat("\n Parsing command line arguments\n")
 
@@ -29,6 +31,7 @@ option_list <- list(
     make_option(c("-t", "--tree"),   type = "character", default = NA, help = "Phylogenetic tree (Newick format)"),
     make_option(c("-d", "--div"),    type = "character", default = NA, help = "Diversity metrics (comma-separated list)"),
     make_option(c("-o", "--output"), type = "character", default = NA, help = "Output prefix"),
+    make_option(c("-r", "--randomizations"), type = "integer", default = 100, help = "Number of randomizations"),
     make_option("--threads",         type = "integer",   default = 4,  help = "Number of CPUs to use")
 
 )
@@ -59,6 +62,7 @@ if(is.null(opt$div)){ opt$div <- "PD,SES.PD" }
 OCC     <- opt$input
 TREE    <- opt$tree
 DIV     <- opt$div
+RANDOMIZATIONS <- as.integer(opt$randomizations)
 THREADS <- opt$threads
 OUTPUT  <- opt$output
 
@@ -67,6 +71,7 @@ cat("  Input:", OCC, "\n")
 cat("  Output prefix:", OUTPUT, "\n")
 cat("  Tree:", TREE, "\n")
 cat("  Diversity metrics:", DIV, "\n")
+cat("  Number of randomizations:", RANDOMIZATIONS, "\n")
 cat("  Number of threads:", THREADS, "\n")
 
 ## Specify the number of threads for data.table
@@ -194,6 +199,46 @@ if("PhyloEndemismStrict" %in% MEASURES){
   cat("..Estimating PhyloEndemismStrict (phylogenetic endemism strict)\n")
   RES <- c(RES, list(PhyloEndemismStrict = phyloregion::phylo_endemism(x = datm, phy = tree, weighted = FALSE) ))
 }
+
+
+########## CANAPE
+
+if("CANAPE" %in% MEASURES){
+  cat("..Estimating CANAPE (Categorical Analysis of Neo- And Paleo-Endemism)\n")
+
+  cat("... Preparing data\n")
+  dattt <- copy(datt)
+  setnames(dattt, 
+    old = colnames(dattt)[ ! colnames(dattt) %in% "H3" ],
+    new = paste0("sp_", colnames(dattt)[ ! colnames(dattt) %in% "H3" ]) )
+  setDF(dattt)
+  rownames(dattt) <- dattt$H3
+  dattt$H3 <- NULL
+
+  treee <- tree
+  treee$tip.label <- paste0("sp_", treee$tip.label)
+
+  cat("... Generating a set of random communities\n")
+  rnd <- cpr_rand_test(
+    comm = dattt,
+    phy = treee,
+    metrics = c("pe", "rpe"),    # "pd", "rpd", 
+    n_reps = RANDOMIZATIONS,
+    null_model = "curveball",    # sequential algo for binary data (Strona et al., 2014), preserves row frequencies
+    n_iterations = 100000,       # for sequential null models
+    thin = 1,
+    tbl_out = TRUE)
+
+
+  cat("... Classifying endemism\n")
+  canape_res <- canaper::cpr_classify_endem(df = rnd)
+  if(any(canape_res$site != datt$H3)){
+    stop("Site names are not matching --- a fix should be implemented in the future\n")
+  }
+  RES <- c(RES, list(CANAPE = canape_res$endem_type ))
+}
+
+
 
 
 
