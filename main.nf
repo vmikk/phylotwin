@@ -2,9 +2,16 @@
 
 println( "Running PhyloTwin diversity estimation pipeline" )
 
+// Directory for publishing outputs
+OUTDIR = params.userid ? params.outdir + "/" + params.userid : params.outdir
+OUTDIR_1_SUB = OUTDIR + "/01.Occurrence_subset"
+OUTDIR_2_DIV = OUTDIR + "/02.Diversity_estimates"
+OUTDIR_3_VIZ = OUTDIR + "/03.Visualization"
 
 // Prepare data subset for diversity estimation (based on spatial and taxonomy filters)
 process subset_data {
+
+    publishDir OUTDIR_1_SUB, mode: "${params.publish_dir_mode}", overwrite: true
 
     input:
       path occurrences
@@ -50,6 +57,8 @@ process subset_data {
 // Estimate diversity (mostly fast indices)
 process estimate_diversity {
 
+    publishDir OUTDIR_2_DIV, mode: "${params.publish_dir_mode}", overwrite: true
+
     input:
       path table
       path tree
@@ -80,6 +89,8 @@ process estimate_diversity {
 
 // Plot diversity indices (interactive map - Leaflet-based choropleth)
 process viz_leaflet {
+
+    publishDir OUTDIR_3_VIZ, mode: "${params.publish_dir_mode}", overwrite: true
 
     input:
       path divestimates  // table with diversity estimates
