@@ -305,3 +305,10 @@ setcolorder(RES, c("H3", "Latitude", "Longitude"))
 cat("..Exporting tab-delimited file\n")
 fwrite(x = RES, file = paste0(OUTPUT, ".txt"), sep = "\t")
 
+cat("..Exporting a list of estimated diversity indices\n")
+inds <- colnames(RES)[! colnames(RES) %in% c("H3", "Latitude", "Longitude") ]
+fwrite(
+  x = data.table(DivIndices = inds),
+  file = "Div_indices.txt",
+  sep = "\t", col.names = FALSE)
+
