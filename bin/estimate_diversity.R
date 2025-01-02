@@ -12,6 +12,7 @@ cat("Loading packages:\n")
 load_pckg("optparse")
 load_pckg("data.table")
 load_pckg("PhyloMeasures")
+load_pckg("phyloregion")
 load_pckg("sf")
 load_pckg("h3")
 load_pckg("ape")
@@ -176,6 +177,26 @@ if("SES.MNTD" %in% MEASURES){
   cat("..Estimating SES.MNTD\n")
   RES <- c(RES, list(SES.MNTD = PhyloMeasures::mntd.query(tree = tree, matrix = datm, standardize = T) ))
 }
+
+
+######## phyloregion-based metrics
+
+
+if("WeightedEndemism" %in% MEASURES){
+  cat("..Estimating WeightedEndemism (weighted endemism)\n")
+  RES <- c(RES, list(WeightedEndemism = phyloregion::weighted_endemism(x = datm) ))
+}
+
+if("PhyloEndemismWeighted" %in% MEASURES){
+  cat("..Estimating PhyloEndemismWeighted (phylogenetic endemism weighted)\n")
+  RES <- c(RES, list(PhyloEndemismWeighted = phyloregion::phylo_endemism(x = datm, phy = tree, weighted = TRUE) ))
+}
+if("PhyloEndemismStrict" %in% MEASURES){
+  cat("..Estimating PhyloEndemismStrict (phylogenetic endemism strict)\n")
+  RES <- c(RES, list(PhyloEndemismStrict = phyloregion::phylo_endemism(x = datm, phy = tree, weighted = FALSE) ))
+}
+
+
 
 
 
