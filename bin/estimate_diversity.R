@@ -209,6 +209,11 @@ if("PhyloEndemismStrict" %in% MEASURES){
 
 if("CANAPE" %in% MEASURES){
   cat("..Estimating CANAPE (Categorical Analysis of Neo- And Paleo-Endemism)\n")
+  ## Enable parallel backend for some metrics
+  if(THREADS > 1){
+    cat("... Enabling parallel backend\n")
+    plan(multicore, workers = THREADS)
+  }
 
   cat("... Preparing data\n")
   dattt <- copy(datt)
@@ -233,6 +238,11 @@ if("CANAPE" %in% MEASURES){
     thin = 1,
     tbl_out = TRUE)
 
+  ## Switch back to non-parallel mode
+  if(THREADS > 1){
+    cat("... Switching back to non-parallel mode\n")
+    plan(sequential)
+  }
 
   cat("... Classifying endemism\n")
   canape_res <- canaper::cpr_classify_endem(df = rnd)
