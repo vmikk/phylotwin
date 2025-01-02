@@ -185,6 +185,10 @@ if("SES.MNTD" %in% MEASURES){
 
 ######## phyloregion-based metrics
 
+if("RPD" %in% MEASURES){
+  cat("..Estimating RPD (relative phylogenetic diversity)\n")
+  RES <- c(RES, list(RPD = phyloregion::RPD(x = datm, phy = tree) ))
+}
 
 if("WeightedEndemism" %in% MEASURES){
   cat("..Estimating WeightedEndemism (weighted endemism)\n")
