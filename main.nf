@@ -98,7 +98,7 @@ process viz_leaflet {
 
     output:
       path "Choropleth_*.html", emit: choropleth
-      path "Leaflet_*.qs",      emit: leaflet
+      path "Leaflet_*.qs",      emit: leaflet, optional: true
 
     script:
     """
