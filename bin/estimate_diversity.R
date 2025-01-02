@@ -251,8 +251,9 @@ if("CANAPE" %in% MEASURES){
 ######## Combine results
 
 cat("Combining results\n")
-RES <- do.call("cbind", RES)
-RES <- data.table(H3 = rownames(datm), RES)
+RES <- do.call(what = data.table:::cbind.data.table, RES)
+RES[ , H3 := rownames(datm) ]
+setcolorder(RES, "H3")
 
 cat("..Adding number of records per H3 cell\n")
 RES <- merge(x = RES, y = num_records, by = "H3", all.x = TRUE)
