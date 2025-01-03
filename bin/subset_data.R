@@ -106,6 +106,7 @@ opt <- lapply(X = opt, FUN = to_na)
 ## Validation of the required arguments
 if(is.na(opt$inpdir)){ cat("Input directory with pre-processed species occurrence counts in Parquet format is not specified.\n", file=stderr()); stop() }
 if(is.na(opt$output)){ cat("Output prefix is not specified.\n", file=stderr()); stop() }
+if(is.na(opt$tree))  { cat("No phylogenetic tree specified.\n", file=stderr()); stop() }
 if(!is.na(opt$specieskeys) && !file.exists(opt$specieskeys)){ cat("The specified file with specieskeys does not exist.\n", file=stderr()); stop() }
 
 if(is.na(opt$resolution)){ cat("H3 resolution is not specified.\n", file=stderr()); stop() }
