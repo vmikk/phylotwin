@@ -143,13 +143,16 @@ workflow {
   )
 
   // Prepare channel with diversity index names for plotting
-  // ch_indices = Channel.from(params.div)
-  ch_indices = Channel.of("Richness", "PD", "SES.PD")    // for debugging
+  // ch_vizindices = Channel.of("Richness", "PD", "SES.PD")    // for debugging
+  ch_vizindices = Channel.from(params.viz.split(','))
+
+  // Replicate diversity estimates for each index
+  ch_divests = ch_vizindices.combine(estimate_diversity.out.qs).map { it[1] }
 
   // Plot diversity indices
   viz_leaflet(
-    estimate_diversity.out.qs,
-    ch_indices
+    ch_divests,
+    ch_vizindices
   )
 }
 
