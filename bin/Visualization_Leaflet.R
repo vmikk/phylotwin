@@ -162,7 +162,7 @@ if(any(!VARIABLES %in% colnames(res))){
 
 ## Subset data
 cat("..Subsetting data\n")
-clz <- c("H3", "Redundancy", VARIABLES)
+clz <- unique(c("H3", "Redundancy", VARIABLES))
 clz <- clz[ clz %in% colnames(res) ]
 res <- res[, ..clz]
 
