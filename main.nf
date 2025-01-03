@@ -91,6 +91,7 @@ process estimate_diversity {
 process viz_leaflet {
 
     publishDir OUTDIR_3_VIZ, mode: "${params.publish_dir_mode}", overwrite: true
+    tag "${index}"
 
     input:
       path divestimates  // table with diversity estimates
@@ -104,10 +105,13 @@ process viz_leaflet {
     """
     Visualization_Leaflet.R \
       --divestimates    ${divestimates} \
-      --variables       ${index} \
+      --variable        ${index} \
       --shortid         TRUE \
-      --antimeridianfix TRUE
+      --antimeridianfix TRUE \
+      --redundancy      ${params.redundancy}
 
+      # --variable2
+      # --saveqs
     """
 }
 
