@@ -126,7 +126,10 @@ if(!is.na(REDUNDANCYTRSH)){
 
 ## Log assigned variables
 cat(paste("Diversity estimates: ",          INPUT,          "\n", sep=""))
-cat(paste("Indices to plot: ",              VARIABLES,      "\n", sep=""))
+cat(paste("Index to plot: ",                VARIABLE,       "\n", sep=""))
+if(!is.null(VARIABLE2)){
+  cat(paste("Second index to plot: ",       VARIABLE2,      "\n", sep=""))
+}
 cat(paste("Redundancy threshold: ",         REDUNDANCYTRSH, "\n", sep=""))
 cat(paste("Display short H3 index names: ", SHORTID,        "\n", sep=""))
 cat(paste("Antimeridian fix: ",             ANTIFIX,        "\n", sep=""))
