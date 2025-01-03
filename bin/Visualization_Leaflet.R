@@ -180,12 +180,23 @@ if(tab_ext %in% "qs"){
   stop()
 }
 
-## Check if the selected index is in the tables
-if(any(!VARIABLES %in% colnames(res))){
-  cat("The selected indices are not present in the diversity estimates table!\n")
+## Check if the selected index is in the table
+if(!VARIABLE %in% colnames(res)){
+  cat("The selected index, ", VARIABLE, ", is not present in the diversity estimates table!\n")
   cat("Please check the spelling of index names\n")
   stop()
 }
+
+## Check if the second index is in the table
+if(!is.null(VARIABLE2)){
+  if(!VARIABLE2 %in% colnames(res)){
+    cat("The second diversity index, ", VARIABLE2, ", is not present in the diversity estimates table!\n")
+    cat("..Ignoring it\n")
+    VARIABLE2 <- NULL
+  }
+}
+
+VARIABLES <- c(VARIABLE, VARIABLE2)
 
 ## Subset data
 cat("..Subsetting data\n")
