@@ -8,7 +8,7 @@ cat("Leaflet-based visualization of biodiversity estimates\n")
 ## Usage example:
 # Visualization_Leaflet.R \
 #   --divestimates ${divestimates} \
-#   --variables    ${index} \
+#   --variable     ${index} \
 #   --shortid      TRUE \
 #   --antimeridianfix TRUE
 
