@@ -112,6 +112,8 @@ if(!is.na(REDUNDANCYTRSH)){
   if(! (0 <= REDUNDANCYTRSH & REDUNDANCYTRSH <= 1) ){
     stop("Redundacy threshold should be in the [0,1] range.\n")
   }
+} else {
+  REDUNDANCYTRSH <- 0
 }
 
 ## Log assigned variables
