@@ -134,6 +134,22 @@ cat(paste("Save QS data: ",                 SAVEQS,         "\n", sep=""))
 
 
 ##########################################################
+########################################################## Debug
+##########################################################
+
+# INPUT          <- "diversity_estimates.qs"
+# VARIABLE       <- "PD"
+# VARIABLE2      <- "Redundancy"  # NULL
+# REDUNDANCYTRSH <- 0
+# SHORTID        <- TRUE
+# ANTIFIX        <- TRUE
+# SAVEQS         <- TRUE
+# PALETTE        <- "quantile"
+# COLOR          <- "RdYlBu"
+# BINS           <- 5
+# COLORSES       <- "threat"
+
+##########################################################
 ########################################################## Load and prepare data
 ##########################################################
 
