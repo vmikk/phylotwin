@@ -57,24 +57,18 @@ load_pckg <- function(pkg = "data.table"){
     cat(".. ", paste(pkg, packageVersion(pkg), "\n"))
 }
 
-cat("Loading packages:\n")
 load_pckg("optparse")
-load_pckg("sf")
-load_pckg("h3")
-load_pckg("data.table")
-load_pckg("plyr")
-load_pckg("leaflet")
-load_pckg("mapview")
-load_pckg("qs")
 
 cat("\n Parsing command line arguments\n")
 
 ## Parse arguments
 option_list <- list(
-  make_option(c("-d", "--divestimates"), action="store", default=NA, type='character', help="Input file with diversity estimates (tab-delimited or QS)"),
-  make_option(c("-v", "--variables"),    action="store", default="PD", type='character', help="Diversity variables to plot (comma-separated entries)"),
-  make_option(c("-j", "--redundancy"), action="store", default=0, type='double', help="Redundancy threshold for hiding the grid cells with low number of records (disabled by default)"),
+  make_option(c("-d", "--divestimates"), action="store", default=NA,   type='character', help="Input file with diversity estimates (tab-delimited or QS)"),
+  make_option(c("-v", "--variable"),     action="store", default="PD", type='character', help="Name of the diversity variable to plot"),
+  make_option("--variable2",             action="store", default=NULL, type='character', help="Name of the second diversity variable to plot"),
+  make_option(c("-j", "--redundancy"),   action="store", default=0,    type='double',    help="Redundancy threshold for hiding the grid cells with low number of records (disabled by default)"),
   make_option(c("--shortid"), action="store", default=TRUE, type='logical', help="Shorten H3 index name of grid cell labels on the map"),
+  make_option(c("--antimeridianfix"), action="store", default=TRUE, type='logical', help="Fix H3 polygons that cross the antimeridian"),
   make_option(c("--saveqs"), action="store", default=FALSE, type='logical', help="Save the Leaflet data in QS format")
 )
 opt <- parse_args(OptionParser(option_list=option_list))
@@ -88,14 +82,28 @@ to_na <- function(x){
 ## Replaces "null"s from Nextflow with NA
 opt <- lapply(X = opt, FUN = to_na)
 
+
+cat("\n-------- Loading packages --------\n")
+load_pckg("data.table")
+load_pckg("sf")
+load_pckg("h3")
+load_pckg("plyr")
+load_pckg("leaflet")
+if(!is.null(opt$variable2)){ load_pckg("leaflet.extras2") }
+load_pckg("mapview")
+load_pckg("qs")
+
+
 ## Validation of the required argiments
+cat("\n-------- Parameters validation --------\n")
 if(is.na(opt$divestimates)){
   stop("Input file with diversity estimates is not specified.\n")
 }
 
 ## Assign variables
 INPUT          <- opt$divestimates
-VARIABLES      <- opt$variables
+VARIABLE       <- opt$variable
+VARIABLE2      <- opt$variable2
 REDUNDANCYTRSH <- as.numeric(to_na( opt$redundancy ))
 SHORTID        <- as.logical( opt$shortid )
 ANTIFIX        <- as.logical( opt$antimeridianfix )
