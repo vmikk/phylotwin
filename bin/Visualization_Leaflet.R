@@ -158,14 +158,6 @@ cat(paste("Save QS data: ",                 SAVEQS,         "\n", sep=""))
 
 cat("\n\n-------- Preparing data --------\n\n")
 
-## If there are multiple variables selected - split them
-if(any(grepl(pattern = ",", x = VARIABLES))){
-  VARIABLES <- unique( strsplit(x = VARIABLES, split = ",")[[1]] )
-  if(length(VARIABLES) > 2){
-    stop("More than two variables selected (currently not supported)\n")
-  }
-}
-
 ## Load input data
 cat("..Loading diversity estimates\n")
 
@@ -306,16 +298,6 @@ cat("..Building basemap\n")
 m <- leaflet() %>% addTiles()
 
 
-## Color palette
-# pal <- colorQuantile(palette = "RdYlBu", domain = H3_poly$PD, n = 5, reverse = TRUE)
-#
-# bins <- c(0, 10, 20, 50, 100, 200, 500, 1000, Inf)
-# pal <- colorBin("YlOrRd", domain = H3_poly$PD, bins = 7, reverse = TRUE) # , bins = bins)
-#
-# pal <- colorNumeric(palette = "YlGnBu", domain = H3_poly$PD, reverse = TRUE)
-
-
-
 cat("..Preparing color palettes\n")
 
 ## Function to create color palette
@@ -449,34 +431,21 @@ if(length(VARIABLES_ses) > 0){
 
 cat("..Adding polygons\n")
 
-# ## Add PD polygons to the map
-# m <- m %>% 
-#   addPolygons(data = H3_poly,
-#     fillColor = ~pal(PD),
-#     group = "PD",
-#     opacity = 0.8,
-#     fillOpacity = 0.8,
-#     weight = 0.3, color = "white", dashArray = "1",
-#     highlightOptions = highlightOptions(
-#       weight = 2, color = "#777777", dashArray = "1",
-#       opacity = 0.8, bringToFront = TRUE),
-#     label = labels,
-#     labelOptions = labelOptions(
-#       style = list("font-weight" = "normal", padding = "3px 8px"),
-#       textsize = "10px", direction = "auto")
-#     ) %>%
-#   addLegend("bottomright", pal = pal, values = H3_poly$PD,
-#     title = "PD", group = "PD",  opacity = 1
-#     )
-
-
-
 ## Shortcut to add polygons with legend to the map
-add_polygons_with_legend <- function(m, v, pal, ses_labels = FALSE){
+add_polygons_with_legend <- function(m, v, pal, ses_labels = FALSE, num = NULL){
+  
+  if(length(VARIABLES) > 1){
+    tmp_gr <- NULL
+    tmp_ly <- v
+  } else {
+    tmp_gr <- v
+    tmp_ly <- NULL
+  }
+
   res <- m %>% 
       addPolygons(data = H3_poly,
         fillColor = ~ pal( H3_poly[[v]] ),
-        group = v,
+        group = tmp_gr, layerId = tmp_ly,
         opacity = 0.8,
         fillOpacity = 0.8,
         weight = 0.3, color = "white", dashArray = "1",
@@ -487,9 +456,23 @@ add_polygons_with_legend <- function(m, v, pal, ses_labels = FALSE){
         labelOptions = labelOptions(
           style = list("font-weight" = "normal", padding = "3px 8px"),
           textsize = "10px", direction = "auto")
-      ) %>%
-      addLegend("bottomright", pal = pal, values = H3_poly[[v]],
-        title = v, group = v,  opacity = 1)
+      )
+      
+    if(length(VARIABLES) > 1){
+      tmp_ww <- which(VARIABLES %in% v)
+      if(tmp_ww == 1){
+        tmp_pos <- "bottomleft"
+      } else {
+        tmp_pos <- "bottomright"
+      }
+      rm(tmp_ww)
+    } else {
+      tmp_pos <- "bottomright"
+    }
+  
+  res <- res %>%
+      addLegend(tmp_pos, pal = pal, values = H3_poly[[v]],
+        title = v, group = tmp_gr, layerId = tmp_ly, opacity = 1)
 
   ## Relable upper bounds of effect sizes
   ## (unfortunately, addLegend(labels =...) does not work with `pal` argument)
@@ -512,6 +495,10 @@ add_polygons_with_legend <- function(m, v, pal, ses_labels = FALSE){
 ## Example:
 # add_polygons_with_legend(m, "PD", pal = pals[[ "PD" ]])
 
+
+########################################################
+######################################################## Constructing maps
+########################################################
 
 ## Loop throug all variables
 ## Except "CANAPE" (it has a categorical color scheme) and "Redundancy"
@@ -563,10 +550,18 @@ if("CANAPE" %in% VARIABLES){
     x = H3_poly[[ "CANAPE" ]],
     type = "canape")
 
+  if(length(VARIABLES) > 1){
+    tmp_gr <- NULL
+    tmp_ly <- "CANAPE"
+  } else {
+    tmp_gr <- "CANAPE"
+    tmp_ly <- NULL
+  }
+
   m <- m %>% 
     addPolygons(data = H3_poly,
       fillColor = ~ canape_pal( H3_poly[[ "CANAPE" ]] ),
-      group = "CANAPE",
+      group = tmp_gr, layerId = tmp_ly,
       opacity = 0.8,
       fillOpacity = 0.8,
       weight = 0.3, color = "white", dashArray = "1",
@@ -577,10 +572,24 @@ if("CANAPE" %in% VARIABLES){
       labelOptions = labelOptions(
         style = list("font-weight" = "normal", padding = "3px 8px"),
         textsize = "10px", direction = "auto")
-    ) %>%
-    addLegend("bottomright", pal = canape_pal, values = H3_poly[[ "CANAPE" ]],
-      title = "CANAPE", group = "CANAPE",  opacity = 1)
+    )
 
+  if(length(VARIABLES) > 1){
+    tmp_ww <- which(VARIABLES %in% "CANAPE")
+    if(tmp_ww == 1){
+      tmp_pos <- "bottomleft"
+    } else {
+      tmp_pos <- "bottomright"
+    }
+    rm(tmp_ww)
+  } else {
+    tmp_pos <- "bottomright"
+  }
+
+  m <- m %>% addLegend(tmp_pos, pal = canape_pal, values = H3_poly[[ "CANAPE" ]],
+      title = "CANAPE", group = tmp_gr, layerId = tmp_ly, opacity = 1)
+
+  rm(tmp_gr, tmp_ly, tmp_pos)
 } # end of CANAPE
 
 
@@ -593,10 +602,18 @@ if("Redundancy" %in% VARIABLES){
     x = H3_poly[[ "Redundancy" ]],
     type = "redundancy")
 
+  if(length(VARIABLES) > 1){
+    tmp_gr <- NULL
+    tmp_ly <- "Redundancy"
+  } else {
+    tmp_gr <- "Redundancy"
+    tmp_ly <- NULL
+  }
+
   m <- m %>% 
     addPolygons(data = H3_poly,
       fillColor = ~ redundancy_pal( H3_poly[[ "Redundancy" ]] ),
-      group = "Redundancy",
+      group = tmp_gr, layerId = tmp_ly,
       opacity = 0.8,
       fillOpacity = 0.8,
       weight = 0.3, color = "white", dashArray = "1",
@@ -607,26 +624,50 @@ if("Redundancy" %in% VARIABLES){
       labelOptions = labelOptions(
         style = list("font-weight" = "normal", padding = "3px 8px"),
         textsize = "10px", direction = "auto")
-    ) %>%
-    addLegend("bottomright", pal = redundancy_pal, values = H3_poly[[ "Redundancy" ]],
-      title = "Sampling redundancy", group = "Redundancy",  opacity = 1)
+    )
+    
+  if(length(VARIABLES) > 1){
+    tmp_ww <- which(VARIABLES %in% "Redundancy")
+    if(tmp_ww == 1){
+      tmp_pos <- "bottomleft"
+    } else {
+      tmp_pos <- "bottomright"
+    }
+    rm(tmp_ww)
+  } else {
+    tmp_pos <- "bottomright"
+  }
+    
+  m <- m %>% addLegend(tmp_pos, pal = redundancy_pal, values = H3_poly[[ "Redundancy" ]],
+      title = "Sampling redundancy", group = tmp_gr, layerId = tmp_ly, opacity = 1)
 
+  rm(tmp_gr, tmp_ly, tmp_pos)
 }
 
 
 ## Add variable selector
-cat("..Adding variable selector\n")
-m <- m %>%
-  addLayersControl(
-    overlayGroups = c(VARIABLES),
-    options = layersControlOptions(collapsed = FALSE)
-    )
+# if(length(VARIABLES) > 1){
+#   cat("..Adding variable selector\n")
+#   m <- m %>%
+#     addLayersControl(
+#       overlayGroups = c(VARIABLES),
+#       options = layersControlOptions(collapsed = FALSE)
+#     )
+# }
 
-## Hide all vars except the first one
-cat("..Hiding variables\n")
-m <- m %>% 
-  hideGroup(VARIABLES[-1])
+## Add side-by-side slider if two variables are selected
+if(!is.null(VARIABLE2)){
+  m <- m %>%
+    addSidebyside(
+      layerId = "sidecontrols",
+      rightId = VARIABLE,
+      leftId  = VARIABLE2)
+}
 
+
+########################################################
+######################################################## Export results
+########################################################
 
 cat("..Exporting the results\n")
 
