@@ -209,6 +209,11 @@ if("PhyloEndemismStrict" %in% MEASURES){
 
 if("CANAPE" %in% MEASURES){
   cat("..Estimating CANAPE (Categorical Analysis of Neo- And Paleo-Endemism)\n")
+
+  if(nrow(datt) <= 5){
+    cat("... WARNING: randomizations might be unreliable for small datasets\n")
+  }
+
   ## Enable parallel backend for some metrics
   if(THREADS > 1){
     cat("... Enabling parallel backend\n")
