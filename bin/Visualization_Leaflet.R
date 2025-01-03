@@ -679,7 +679,7 @@ cat("...Exporting Choropleth map in HTML\n")
 ## Save a leaflet map as .html
 mapshot(
   m,
-  url  = paste0("Choropleth_", opt$variables, ".html"),   # NB. use non-splitted variable name as provided by the user
+  url  = paste0("Choropleth_", paste(VARIABLES, collapse = ","), ".html"),   # NB. use non-splitted variable name as provided by the user
   file = NULL,
   selfcontained = TRUE)
 
@@ -697,7 +697,7 @@ if(SAVEQS == TRUE){
 
   # saveRDS(object = m, file = "Leaflet_object.RData", compress = "xz")
 
-  qs::qsave(m, paste0("Leaflet_", opt$variables, ".qs"),
+  qs::qsave(m, paste0("Leaflet_", paste(VARIABLES, collapse = ","), ".qs"),
     preset = "custom", algorithm = "zstd", compress_level = 14L)
 }
 
