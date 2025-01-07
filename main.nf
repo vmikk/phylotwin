@@ -64,9 +64,10 @@ process estimate_diversity {
       path tree
 
     output:
-      path "diversity_estimates.txt",  emit: txt
-      path "diversity_estimates.qs",   emit: qs
-      path "diversity_estimates.gpkg", emit: geopackage
+      path "diversity_estimates.txt",        emit: txt
+      path "diversity_estimates.qs",         emit: qs
+      path "diversity_estimates.gpkg",       emit: geopackage
+      path "diversity_estimates.geojson.gz", emit: geojson
 
     script:
     """
@@ -81,6 +82,11 @@ process estimate_diversity {
       --output      diversity_estimates \
       --div         ${params.div} \
       --threads     ${task.cpus}
+
+    ## Compress GeoJSON file
+    if [ -f diversity_estimates.geojson ]; then
+      gzip -4 diversity_estimates.geojson
+    fi
 
     echo "..Done"
     """
