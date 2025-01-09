@@ -50,7 +50,7 @@ load_pckg("glue")
 load_pckg("openxlsx")
 # load_pckg("geos")
 # load_pckg("wk")
-# load_pckg("h3")
+load_pckg("h3")
 
 cat("\n Parsing command line arguments\n")
 
@@ -85,6 +85,7 @@ option_list <- list(
 
     ## Miscellaneous parameters
     make_option("--data", action="store", default="./data", type='character', help="Path to the internal data of the pipeline"),
+    make_option("--csv", action="store", default=FALSE, type='logical', help="Export aggregated counts to CSV (default, FALSE)"),
     make_option("--duckdb_memory", action="store", default=NA, type='character', help="Memory limit for DuckDB (e.g., 10GB)"),
     make_option("--threads", action="store", default=2, type='integer', help="Number of CPUs to use")
 )
@@ -202,6 +203,7 @@ MAXYEAR <- as.numeric(to_na( opt$maxyear) )
 BASISOFRECORD <- to_na( opt$basisofrecord )
 
 DATA <- opt$data
+CSV  <- opt$csv
 DUCKDB_MEMORY <- to_na( opt$duckdb_memory )
 THREADS <- as.integer( opt$threads )
 
@@ -231,6 +233,7 @@ cat("  Basis of record:", BASISOFRECORD, "\n")
 
 cat("\nMiscellaneous parameters:\n")
 cat("  Internal data of the pipeline: ", DATA, "\n")
+cat("  Export aggregated counts to CSV:", CSV, "\n")
 cat("  DuckDB memory limit:", DUCKDB_MEMORY, "\n")
 cat("  Number of threads:", THREADS, "\n")
 
@@ -644,4 +647,39 @@ main_query <- glue(
 
 
 
+##########################################################
+########################################################## Prepare Biodiverse input (optional)
+##########################################################
+
+# duckdb -c "COPY (
+#     SELECT * FROM read_parquet('aggregated_counts.parquet')
+# ) TO 'aggregated_counts.csv' (FORMAT CSV, HEADER false, COMPRESSION 'gzip');"
+
+
+if(CSV == TRUE){
+
+  cat("\n\n-------- Preparing Biodiverse input --------\n\n")
+
+  ## Read the aggregated counts
+  cat("..Reading aggregated counts\n")
+  aggregated_counts <- open_dataset("aggregated_counts.parquet") %>% collect()
+  setDT(aggregated_counts)
+
+  ## Get H3 coordinates
+  cat("..Calculating H3 coordinates\n")
+  aggregated_counts[, c("Latitude", "Longitude") := as.data.table(h3::h3_to_geo(H3)) ]
+
+  ## Reorder columns
+  cat("..Reordering data\n")
+  setcolorder(aggregated_counts, c("H3", "Latitude", "Longitude", "specieskey", "total_records"))
+  setorder(aggregated_counts, H3, specieskey)
+
+  ## Export to CSV
+  cat("..Exporting CSV file\n")
+  fwrite(
+    x = aggregated_counts,
+    file = "aggregated_counts.csv",
+    sep = ",", quote = FALSE, col.names = TRUE)
+
+}
 
