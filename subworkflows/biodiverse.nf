@@ -6,15 +6,12 @@
 process prep_biodiv {
 
     label "container_biodiverse"
-    queue "custom_pool"
-
-    publishDir "$params.outdir/02.Biodiverse_input", mode: 'copy'
 
     // cpus 1
 
     input:
-      path occurrences
-      path tree
+      path occurrences    // Occurrence data, CSV
+      path tree           // Phylogenetic tree, Newick
 
     output:
       path "occ.bds",          emit: BDS
@@ -24,32 +21,37 @@ process prep_biodiv {
 
     script:
     """
-    ## For debugging - check which Perl are we using?
-    # perl --version
-
     ## Prepare Biodiverse input file
     ## NB! column numbers are zero-based here
     ## Latitude = Y, Longitude = X
-    00_create_bds.pl \
+    
+    ## Input occurrence data format:
+    # H3, Latitude, Longitude, specieskey, total_records
+    #  0,    1,         2,         3,           4
+
+    echo -e "\n\n---- Preparing occurrence data ----\n\n"
+    Biodiverse_00_create_bds.pl \
       --csv_file ${occurrences} \
       --out_file "occ.bds" \
-      --label_column_number     '0' \
-      --sampcount_column_number '6' \
-      --group_column_number_x   '5' \
-      --group_column_number_y   '4' \
+      --label_column_number     '3' \
+      --sampcount_column_number '4' \
+      --group_column_number_x   '2' \
+      --group_column_number_y   '1' \
       --cell_size_x '0' \
       --cell_size_y '0'
 
     ## Prepare the tree for Biodiverse
-    00_create_bts.pl \
+    echo -e "\n\n---- Preparing phylogenetic tree ----\n\n"
+    Biodiverse_00_create_bts.pl \
       --input_tree_file ${tree} \
       --out_file "tree.bts"
 
     ## Run the analyses
-    02_biodiverse_analyses.pl \
+    echo -e "\n\n---- Running Biodiverse analyses ----\n\n"
+    Biodiverse_02_biodiverse_analyses.pl \
       --input_bds_file "occ.bds" \
       --input_bts_file "tree.bts" \
-      --calcs ${params.indices}
+      --calcs ${params.bd_indices}
 
     """
 }
