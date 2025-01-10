@@ -1,6 +1,9 @@
 #!/usr/bin/env nextflow
 
-println( "Running PhyloTwin diversity estimation pipeline" )
+
+// Path to the directory with built-in phylogenetic trees
+def treesDir = "${projectDir}/data/Phylotrees"
+
 
 // Directory for publishing outputs
 OUTDIR = params.userid ? params.outdir + "/" + params.userid : params.outdir
@@ -127,8 +130,15 @@ workflow {
 
   // Channels
   ch_occ  = Channel.fromPath(params.occ, type: 'dir', checkIfExists: true)
-  ch_tree = Channel.fromPath(params.tree)
-    
+  ch_tree = Channel.value(params.tree)
+    .map { tree ->
+        def treePath = "${treesDir}/${tree}"
+        if (!file(treePath).exists()) {
+            throw new IllegalArgumentException("Specified tree file '${tree}' does not exist in ${treesDir}")
+        }
+        return file(treePath)
+    }
+
   // Optional input files
   ch_poly   = params.polygon ? Channel.fromPath(params.polygon) : Channel.fromPath("no_polygon", checkIfExists: false)
   ch_spkeys = params.specieskeys ? Channel.fromPath(params.specieskeys) : Channel.fromPath("no_specieskeys", checkIfExists: false)
