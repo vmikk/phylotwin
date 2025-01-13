@@ -1,6 +1,18 @@
 
 // Subworkflow for Biodiverse-based diversity estimation
 
+// How many randomization iterations should be per Biodiverse thread?
+if( params.bd_threads > 1 ) {
+    randomization_chunks = (0..<params.bd_threads)
+    iterations_per_thread = params.rnd / params.bd_threads
+    iterations_per_thread = Math.ceil(iterations_per_thread).toInteger()
+}
+else {
+    randomization_chunks = [ 1 ]
+    iterations_per_thread = params.rnd
+}
+biodiverse_args = "function=" + params.bd_randname + " max_iters=" + iterations_per_thread
+
 
 // Create Biodiverse input files
 process prep_biodiv {
