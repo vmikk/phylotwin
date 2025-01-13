@@ -46,11 +46,12 @@ load_pckg("arrow")
 load_pckg("dplyr")
 load_pckg("qs")
 load_pckg("glue")
-# load_pckg("crayon")
 load_pckg("openxlsx")
+load_pckg("h3")
+# load_pckg("plyr")     # conflicts with dplyr
+# load_pckg("crayon")
 # load_pckg("geos")
 # load_pckg("wk")
-load_pckg("h3")
 
 cat("\n Parsing command line arguments\n")
 
@@ -400,7 +401,7 @@ if(! is.na(COUNTRY)) {
   cat("Loading grid-cells at country level and the specified H3 resolution\n")
   COUNTRY <- toupper(unique(strsplit(x = COUNTRY, split = ",")[[1]]))
   country_path <- file.path(DATA, "Countries_H3", paste0("h3_", RESOLUTION), paste0(COUNTRY, ".txt.gz"))
-  country_h3 <- alply(.data = country_path, .margins = 1, .fun = fread)
+  country_h3 <- plyr::alply(.data = country_path, .margins = 1, .fun = fread)
   country_h3 <- rbindlist(country_h3)
   
   cat("..number of grid-cell IDs loaded: ", nrow(country_h3))
