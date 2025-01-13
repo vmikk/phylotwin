@@ -62,10 +62,8 @@ process prep_biodiv {
 process phylodiv {
 
     label "container_biodiverse"
-    queue "custom_pool"
 
-    // publishDir "$params.outdir/02.Biodiverse_results", mode: 'copy'
-    // cpus 1
+   // cpus 1
 
     input:
       path(BDA)
@@ -76,7 +74,7 @@ process phylodiv {
 
     script:
     """
-    03_run_randomisation.pl \
+    Biodiverse_03_run_randomisation.pl \
       --basedata ${BDA} \
       --bd_name  ${BDA} \
       --out_file "Biodiv_randomized.bds" \
