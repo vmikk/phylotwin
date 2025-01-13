@@ -60,6 +60,9 @@ process subset_data {
 // Estimate diversity (mostly fast indices)
 process estimate_diversity {
 
+    // Code `99` is used to indicate that no species occurrences were found with the specified filters
+    errorStrategy { task.exitStatus == 99 ? 'ignore' : 'retry' }
+
     publishDir OUTDIR_2_DIV, mode: "${params.publish_dir_mode}", overwrite: true
 
     input:
@@ -67,10 +70,11 @@ process estimate_diversity {
       path tree
 
     output:
-      path "diversity_estimates.txt",        emit: txt
-      path "diversity_estimates.qs",         emit: qs
-      path "diversity_estimates.gpkg",       emit: geopackage
-      path "diversity_estimates.geojson.gz", emit: geojson
+      val(exitStatus),                       emit: exit_status
+      path "diversity_estimates.txt",        emit: txt,        optional: true
+      path "diversity_estimates.qs",         emit: qs,         optional: true
+      path "diversity_estimates.gpkg",       emit: geopackage, optional: true
+      path "diversity_estimates.geojson.gz", emit: geojson,    optional: true
 
     script:
     """
@@ -86,12 +90,20 @@ process estimate_diversity {
       --div         ${params.div} \
       --threads     ${task.cpus}
 
+    exit_code=\$?
+
     ## Compress GeoJSON file
     if [ -f diversity_estimates.geojson ]; then
       gzip -4 diversity_estimates.geojson
     fi
 
     echo "..Done"
+
+    ## Exit with the same code as the R script
+    if [ \$exit_code -ne 0 ]; then
+      exit \$exit_code
+    fi
+
     """
 }
 
