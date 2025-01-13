@@ -23,11 +23,13 @@ process subset_data {
 
     output:
       path "aggregated_counts.parquet", emit: occ_counts_long
+      path "aggregated_counts.csv",     emit: occ_counts_csv, optional: true
       path "dataset_keys.tsv",          emit: dataset_keys
 
     script:
     def spkeysArg = specieskeys.name != 'no_specieskeys' ? "--specieskeys ${specieskeys}" : ''
     def polyArg = polygon.name != 'no_polygon' ? "--polygon ${polygon}" : ''
+    def csvArg  = params.bd_indices ? "--csv TRUE" : ""
     """
     echo -e "Subsetting data\n"
 
@@ -49,6 +51,7 @@ process subset_data {
       --lonmax      ${params.lonmax} \
       ${polyArg} \
       --data        ${params.data} \
+      ${csvArg} \
       --threads     ${task.cpus}
 
     echo "..Done"
