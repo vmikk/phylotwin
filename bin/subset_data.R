@@ -648,6 +648,13 @@ main_query <- glue(
   output_datasetkeys = "dataset_keys.tsv")
 
 
+cat("Executing the query\n")
+dbExecute(con, main_query)
+
+cat("Disconnecting from DuckDB\n")
+dbDisconnect(con, shutdown = TRUE)
+
+
 
 ##########################################################
 ########################################################## Prepare Biodiverse input (optional)
