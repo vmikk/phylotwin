@@ -77,7 +77,7 @@ process estimate_diversity {
       path "diversity_estimates.txt",        emit: txt,        optional: true
       path "diversity_estimates.qs",         emit: qs,         optional: true
       path "diversity_estimates.gpkg",       emit: geopackage, optional: true
-      path "diversity_estimates.geojson.gz", emit: geojson,    optional: true
+      path "diversity_estimates.geojson",    emit: geojson,    optional: true
 
     script:
     """
@@ -95,10 +95,10 @@ process estimate_diversity {
 
     exit_code=\$?
 
-    ## Compress GeoJSON file
-    if [ -f diversity_estimates.geojson ]; then
-      gzip -4 diversity_estimates.geojson
-    fi
+    # ## Compress GeoJSON file
+    # if [ -f diversity_estimates.geojson ]; then
+    #   gzip -4 diversity_estimates.geojson
+    # fi
 
     echo "..Done"
 
