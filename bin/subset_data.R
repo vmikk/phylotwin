@@ -674,21 +674,30 @@ if(CSV == TRUE){
   aggregated_counts <- open_dataset("aggregated_counts.parquet") %>% collect()
   setDT(aggregated_counts)
 
-  ## Get H3 coordinates
-  cat("..Calculating H3 coordinates\n")
-  aggregated_counts[, c("Latitude", "Longitude") := as.data.table(h3::h3_to_geo(H3)) ]
+  if(nrow(aggregated_counts) == 0){
 
-  ## Reorder columns
-  cat("..Reordering data\n")
-  setcolorder(aggregated_counts, c("H3", "Latitude", "Longitude", "specieskey", "total_records"))
-  setorder(aggregated_counts, H3, specieskey)
+    cat("..NO RECORDS FOUND - exiting\n")
+    quit(status = 0)
+ 
+  } else {
 
-  ## Export to CSV
-  cat("..Exporting CSV file\n")
-  fwrite(
-    x = aggregated_counts,
-    file = "aggregated_counts.csv",
-    sep = ",", quote = FALSE, col.names = TRUE)
+    ## Get H3 coordinates
+    cat("..Calculating H3 coordinates\n")
+    aggregated_counts[, c("Latitude", "Longitude") := as.data.table(h3::h3_to_geo(H3)) ]
+
+    ## Reorder columns
+    cat("..Reordering data\n")
+    setcolorder(aggregated_counts, c("H3", "Latitude", "Longitude", "specieskey", "total_records"))
+    setorder(aggregated_counts, H3, specieskey)
+
+    ## Export to CSV
+    cat("..Exporting CSV file\n")
+    fwrite(
+      x = aggregated_counts,
+      file = "aggregated_counts.csv",
+      sep = ",", quote = FALSE, col.names = TRUE)
+
+  } ## end of no records
 
 }
 
