@@ -110,6 +110,7 @@ if(is.na(opt$inpdir)){ cat("Input directory with pre-processed species occurrenc
 if(is.na(opt$output)){ cat("Output prefix is not specified.\n", file=stderr()); stop() }
 if(is.na(opt$tree))  { cat("No phylogenetic tree specified.\n", file=stderr()); stop() }
 if(is.na(opt$data)){ cat("Path to the internal data of the pipeline is not specified.\n", file=stderr()); stop() }
+if(!dir.exists(opt$data)){ cat("Path to the internal data of the pipeline does not exist.\n", file=stderr()); stop() }
 if(!is.na(opt$specieskeys) && !file.exists(opt$specieskeys)){ cat("The specified file with specieskeys does not exist.\n", file=stderr()); stop() }
 
 if(is.na(opt$resolution)){ cat("H3 resolution is not specified.\n", file=stderr()); stop() }
