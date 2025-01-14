@@ -107,7 +107,6 @@ process phylodiv {
 process prep_shapefile {
 
     label "container_r"
-    queue "custom_pool"
 
     // cpus 1
 
@@ -120,7 +119,7 @@ process prep_shapefile {
 
     script:
     """
-    12_Prepare_SpatialConstraints.R \
+    Biodiverse_12_Prepare_SpatialConstraints.R \
       --input ${occurrences} \
       --randconstrain ${polygons} \
       --threads ${task.cpus} \
