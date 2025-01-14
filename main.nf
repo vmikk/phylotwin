@@ -73,7 +73,6 @@ process estimate_diversity {
       path tree
 
     output:
-      val(exitStatus),                       emit: exit_status
       path "diversity_estimates.txt",        emit: txt,        optional: true
       path "diversity_estimates.qs",         emit: qs,         optional: true
       path "diversity_estimates.gpkg",       emit: geopackage, optional: true
