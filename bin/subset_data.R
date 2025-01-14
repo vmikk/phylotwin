@@ -574,7 +574,7 @@ if(! is.na(DUCKDB_MEMORY)) { dbExecute(con, sprintf("SET memory_limit = '%s';", 
 # if(! is.na(EXT_DIR)) { dbExecute(con, sprintf("SET extension_directory='%s';", EXT_DIR)) }
 
 ## Load H3 extension
-# dbExecute(con, "LOAD h3;")
+# dbExecute(con, "LOAD h3;")   # TODO - fix the path to extensions if Docker/Singularity container is used
 
 cat("Preparing the query for DuckDB\n")
 
