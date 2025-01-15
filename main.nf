@@ -4,6 +4,8 @@
 // Path to the directory with built-in phylogenetic trees
 def treesDir = "${projectDir}/data/Phylotrees"
 
+// Include Biodiverse sub-workflow
+include { BIODIVERSE } from "./subworkflows/biodiverse.nf"
 
 // Directory for publishing outputs
 OUTDIR = params.userid ? params.outdir + "/" + params.userid : params.outdir
