@@ -174,6 +174,17 @@ workflow {
     ch_tree
   )
 
+  // Biodiverse-based subworkflow
+  if (params.bd_indices) {
+
+    BIODIVERSE(
+      subset_data.out.occ_counts_csv,
+      ch_tree
+    )
+
+  } // end of Biodiverse subworkflow
+
+
   // Prepare channel with diversity index names for plotting
   // ch_vizindices = Channel.of("Richness", "PD", "SES.PD")    // for debugging
   ch_vizindices = Channel.from(params.viz.split(','))
