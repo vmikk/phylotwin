@@ -1,6 +1,8 @@
 #!/usr/bin/env nextflow
 
 
+println( "Running PhyloTwin diversity estimation pipeline\n" )
+
 // Path to the directory with built-in phylogenetic trees
 def treesDir = "${projectDir}/data/Phylotrees"
 
