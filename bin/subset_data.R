@@ -104,6 +104,28 @@ to_na <- function(x){
 ## Replaces "null"s from Nextflow with NA
 opt <- lapply(X = opt, FUN = to_na)
 
+## Data for debugging
+# opt <- list(
+#   inpdir = paste0(getwd(), "/Filtered_parquet") ,
+#   output = paste0(getwd(), "/results"),
+#   tree = "Ferns_FTOL_1-7-0.nwk.gz",
+#   phylum = NA,
+#   class = NA,
+#   order = NA,
+#   family = NA,
+#   genus = NA,
+#   specieskeys = NA,  # paste0(pth, "test_data/test_spkeys.txt"),
+#   resolution = 4,
+#   country = "EE,FI,DK,NO,SE",
+#   latmin = 54.8, latmax = 61,
+#   lonmin = 6.5,  lonmax = 28.2,
+#   polygon = NA,     # paste0(pth, "test_data/test_wkt.txt"),
+#   basisofrecord = NA,
+#   minyear = 1945,
+#   maxyear = NA,
+#   threads = 2,
+#   data = "/mnt/Data/Dropbox/Proj/BioDT/phylotwin/data"
+# )
 
 ## Validation of the required arguments
 if(is.na(opt$inpdir)){ cat("Input directory with pre-processed species occurrence counts in Parquet format is not specified.\n", file=stderr()); stop() }
