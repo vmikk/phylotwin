@@ -186,19 +186,24 @@ workflow {
 
   } // end of Biodiverse subworkflow
 
+  // Plot diversity indices into HTML files
+  if (params.noviz == false) {
 
-  // Prepare channel with diversity index names for plotting
-  // ch_vizindices = Channel.of("Richness", "PD", "SES.PD")    // for debugging
-  ch_vizindices = Channel.from(params.viz.split(','))
+      // Prepare channel with diversity index names for plotting
+      // ch_vizindices = Channel.of("Richness", "PD", "SES.PD")    // for debugging
+      ch_vizindices = Channel.from(params.viz.split(','))
 
-  // Replicate diversity estimates for each index
-  ch_divests = ch_vizindices.combine(estimate_diversity.out.qs).map { it[1] }
+      // Replicate diversity estimates for each index
+      ch_divests = ch_vizindices.combine(estimate_diversity.out.qs).map { it[1] }
 
-  // Plot diversity indices
-  viz_leaflet(
-    ch_divests,
-    ch_vizindices
-  )
+      // Plot diversity indices
+      viz_leaflet(
+        ch_divests,
+        ch_vizindices
+      )
+
+  } // end of noviz
+
 }
 
 
