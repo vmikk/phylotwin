@@ -220,9 +220,6 @@ process aggregate_rnds_biodiv {
 process div_to_csv {
 
     label "container_biodiverse"
-    queue "custom_pool"
-
-    publishDir "$params.outdir/02.Biodiverse_results", mode: 'copy'
 
     // cpus 1
 
@@ -230,23 +227,16 @@ process div_to_csv {
       path Biodiv
 
     output:
-      path "RND_groups.csv",                          emit: grp
-      path "RND_SPATIAL_RESULTS.csv",                 emit: spat
-      path "RND_rand--SPATIAL_RESULTS.csv",           emit: spat_r
-      path "RND_rand--p_rank--SPATIAL_RESULTS.csv",   emit: spat_p
-      path "RND_rand--z_scores--SPATIAL_RESULTS.csv", emit: spat_z
-      path "RND_rand--CANAPE--.csv",                  emit: canape, optional: true
-      path "RND_HURLBERT_ES.csv",                     emit: hurl,   optional: true
-      path "RND_rand--HURLBERT_ES.csv",               emit: hurl_r, optional: true
-      path "RND_rand--p_rank--HURLBERT_ES.csv",       emit: hurl_p, optional: true
-      path "RND_rand--z_scores--HURLBERT_ES.csv",     emit: hurl_z, optional: true
+      path "bd_out/*.csv", emit: csvs
 
     script:
     """
-    04_load_bds_and_export_results.pl \
+    Biodiverse_04_load_bds_and_export_results.pl \
       --input_bds_file ${Biodiv} \
       --output_csv_prefix 'RND'
 
+    mkdir -p bd_out
+    mv RND_*.csv bd_out/
 
     """
 }
