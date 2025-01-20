@@ -167,7 +167,6 @@ process rand_filelist {
 
     // container image is required for Cloud only
     label "container_r"
-    queue "custom_pool"
 
     input:
       path(randfiles)
