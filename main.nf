@@ -18,6 +18,8 @@ OUTDIR_3_VIZ = OUTDIR + "/03.Visualization"
 // Prepare data subset for diversity estimation (based on spatial and taxonomy filters)
 process subset_data {
 
+    label "container_phylotwin"
+
     publishDir OUTDIR_1_SUB, mode: "${params.publish_dir_mode}", overwrite: true
 
     input:
@@ -66,6 +68,8 @@ process subset_data {
 
 // Estimate diversity (mostly fast indices)
 process estimate_diversity {
+
+    label "container_phylotwin"
 
     // Code `99` is used to indicate that no species occurrences were found with the specified filters
     errorStrategy { task.exitStatus == 99 ? 'ignore' : 'retry' }
@@ -116,6 +120,8 @@ process estimate_diversity {
 
 // Plot diversity indices (interactive map - Leaflet-based choropleth)
 process viz_leaflet {
+
+    label "container_phylotwin"
 
     publishDir OUTDIR_3_VIZ, mode: "${params.publish_dir_mode}", overwrite: true
     tag "${index}"
