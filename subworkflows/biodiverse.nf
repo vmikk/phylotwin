@@ -270,11 +270,13 @@ workflow BIODIVERSE {
         occurrences
         tree
 
-    // Prepare Biodiverse input files
-    prep_biodiv(merge_occ.out.occurrences, merge_occ.out.tree)
+    main:
 
-    // Channel of randomization chunks
-    rnd_ch = Channel.fromList( randomization_chunks )
+      // Prepare Biodiverse input files
+      prep_biodiv(occurrences, tree)
+
+      // Channel of randomization chunks
+      rnd_ch = Channel.fromList( randomization_chunks )
 
 
     // If no spatial constraints (for randomization) are provided
@@ -344,14 +346,7 @@ workflow BIODIVERSE {
     div_to_csv(aggregate_rnds_biodiv.out.Biodiv)
 
     emit:
-        rnd_groups = div_to_csv.out.grp            // RND_groups.csv
-        rnd_spat   = div_to_csv.out.spat           // RND_SPATIAL_RESULTS.csv
-        rnd_spat_r = div_to_csv.out.spat_r         // RND_rand--SPATIAL_RESULTS.csv
-        rnd_spat_p = div_to_csv.out.spat_p         // RND_rand--p_rank--SPATIAL_RESULTS.csv
-        rnd_spat_z = div_to_csv.out.spat_z         // RND_rand--z_scores--SPATIAL_RESULTS.csv
-        rnd_canape = div_to_csv.out.canape         // RND_rand--CANAPE--.csv
-        rnd_hurl   = div_to_csv.out.hurl           // RND_HURLBERT_ES.csv
-        rnd_hurl_r = div_to_csv.out.hurl_r         // RND_rand--HURLBERT_ES.csv
-        rnd_hurl_p = div_to_csv.out.hurl_p         // RND_rand--p_rank--HURLBERT_ES.csv
-        rnd_hurl_z = div_to_csv.out.hurl_z         // RND_rand--z_scores--HURLBERT_ES.csv
-}
+        bdres = merge_biodiverse_results.out.bdres
+
+} // end of sub-workflow
+
