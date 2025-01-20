@@ -195,10 +195,8 @@ process rand_filelist {
 process aggregate_rnds_biodiv {
 
     label "container_biodiverse"
-    queue "custom_pool"
 
-    publishDir "$params.outdir/02.Biodiverse_results", mode: 'copy'
-    // cpus 1
+   // cpus 1
 
     input:
       path RND
@@ -209,7 +207,7 @@ process aggregate_rnds_biodiv {
 
     script:
     """
-    05_reintegrate_basedatas_post_rand.pl \
+    Biodiverse_05_reintegrate_basedatas_post_rand.pl \
       --glob ${RND} \
       --output_prefix Biodiverse
     """
