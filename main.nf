@@ -216,9 +216,10 @@ workflow {
 
 // On completion
 workflow.onComplete {
-    println "Pipeline completed at : $workflow.complete"
-    println "Duration              : ${workflow.duration}"
-    println "Execution status      : ${workflow.success ? 'All done!' : 'Failed' }"
+    println "Completed at      : ${workflow.complete}"
+    println "Duration          : ${workflow.duration}"
+    println "Success           : ${workflow.success}"
+    println "Execution status  : ${workflow.success ? 'All done!' : 'Failed' }"
 }
 
 // On error
