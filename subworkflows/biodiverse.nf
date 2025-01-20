@@ -247,8 +247,35 @@ process div_to_csv {
       --input_bds_file ${Biodiv} \
       --output_csv_prefix 'RND'
 
+
     """
 }
+
+
+// Merge Biodiverse results into a single table
+process merge_biodiverse_results {
+
+    label "container_r"
+
+    // cpus 1
+
+    input:
+      path inps
+
+    output:
+      path "Biodiverse_results.txt", emit: bdres
+
+    script:
+    """
+    biodiverse_combine_tabs.R \
+      --inpdir . \
+      --prefix RND \
+      --resolution ${params.resolution} \
+      --output Biodiverse_results.txt
+
+    """
+}
+
 
 
 workflow BIODIVERSE {
