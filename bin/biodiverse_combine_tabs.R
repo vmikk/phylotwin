@@ -35,4 +35,15 @@ PREFIX     <- opt$prefix
 cat("\n\n-------- Loading Biodiverse results --------\n\n")
 
 
+## Function to read Biodiverse results
+read_bd <- function(file){
+  res <- fread(file, sep = ",")
+  setnames(res,
+    old = c("Axis_1", "Axis_0"),
+    new = c("Latitude", "Longitude"))
+  return(res)
+}
+
+
+
 
