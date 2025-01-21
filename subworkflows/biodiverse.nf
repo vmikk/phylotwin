@@ -106,7 +106,7 @@ process phylodiv {
 // Prepare a shapefile to spatially constrain randomizations
 process prep_shapefile {
 
-    label "container_r"
+    label "container_phylotwin"
 
     // cpus 1
 
@@ -166,7 +166,7 @@ process phylodiv_constrianed {
 process rand_filelist {
 
     // container image is required for Cloud only
-    label "container_r"
+    // label "container_phylotwin"
 
     input:
       path(randfiles)
@@ -242,7 +242,7 @@ process div_to_csv {
 // Merge Biodiverse results into a single table
 process merge_biodiverse_results {
 
-    label "container_r"
+    label "container_phylotwin"
 
     // cpus 1
 
