@@ -279,68 +279,46 @@ workflow BIODIVERSE {
       rnd_ch = Channel.fromList( randomization_chunks )
 
 
-    // If no spatial constraints (for randomization) are provided
-    if(params.randconstrain == null){
+      // If no spatial constraints (for randomization) are provided
+      if(params.bd_randconstrain == null){
 
-      // Perform unconstrained randomizations
-      phylodiv(prep_biodiv.out.BDA, rnd_ch)
+        // Perform unconstrained randomizations
+        phylodiv(prep_biodiv.out.BDA, rnd_ch)
 
-      // Prepare a file with paths of `phylodiv` output (multiple chunks of randomizations)
-      // and create a new channel from it
-      rand_filelist(phylodiv.out.BDArand.collect())
+        // Prepare a file with paths of `phylodiv` output (multiple chunks of randomizations)
+        // and create a new channel from it
+        rand_filelist(phylodiv.out.BDArand.collect())
 
-      // Aggregate randomization results (with Biodiverse script)
-      aggregate_rnds_biodiv(
-          rand_filelist.out.RND,
-          phylodiv.out.BDArand.collect())
+        // Aggregate randomization results (with Biodiverse script)
+        aggregate_rnds_biodiv(
+            rand_filelist.out.RND,
+            phylodiv.out.BDArand.collect())
 
-    } else {
 
+      } else {
       // If spatial constraints are provided, split dataset in parts (for each polygon)
 
-      // A channel with spatial polygons
-      polygons = file(params.randconstrain)
+        // A channel with spatial polygons
+        polygons = file(params.bd_randconstrain)
 
-      // Prepare a shapefile with polygons
-      prep_shapefile(merge_occ.out.occurrences, polygons)
+        // Prepare a shapefile with polygons
+        prep_shapefile(occurrences, polygons)
 
-      // Run spatially-constrained randomizations
-      phylodiv_constrianed(
-        prep_biodiv.out.BDA,
-        prep_shapefile.out.shapefile,
-        rnd_ch)
+        // Run spatially-constrained randomizations
+        phylodiv_constrianed(
+          prep_biodiv.out.BDA,
+          prep_shapefile.out.shapefile,
+          rnd_ch)
 
-      // Collect `phylodiv_constrianed` output (multiple chunks of randomizations)
-      rand_filelist(phylodiv_constrianed.out.BDArand.collect())
+        // Collect `phylodiv_constrianed` output (multiple chunks of randomizations)
+        rand_filelist(phylodiv_constrianed.out.BDArand.collect())
 
-      // Aggregate randomization results (with Biodiverse script)
-      aggregate_rnds_biodiv(
-          rand_filelist.out.RND,
-          phylodiv_constrianed.out.BDArand.collect())
+        // Aggregate randomization results (with Biodiverse script)
+        aggregate_rnds_biodiv(
+            rand_filelist.out.RND,
+            phylodiv_constrianed.out.BDArand.collect())
 
-    } // end of randomizations
-
-
-    // // Split occurrences by polygons and run randomizations independently
-    // polygons = file(params.randconstrain)
-    //
-    // // Split dataset
-    // split_by_polygons(merge_occ.out.occurrences, polygons)
-    //
-    // // Channel with spatially-constrained datasets
-    // ch_spatconstr = split_by_polygons.out.occsplit.flatten()
-    // ch_spatconstr.view()
-    //
-    // // Prepare data for Biodiverse
-    // prep_biodiv(ch_spatconstr, merge_occ.out.tree)
-    //
-    // // Channel with the number of randomization chunks
-    // rnd_ch_tmp = Channel.fromList( randomization_chunks )
-    //
-    // // Apply randomization chunks for each spatially-contrained dataset (cartesian product)
-    // rnd_ch = prep_biodiv.out.BDA.combine(rnd_ch_tmp)
-    // rnd_ch.view()
-
+      } // end of randomizations
 
     // Output results as CSV
     div_to_csv(aggregate_rnds_biodiv.out.Biodiv)
