@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 
 ## Function to load packages
 load_pckg <- function(pkg = "data.table"){
