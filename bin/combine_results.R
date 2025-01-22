@@ -3,6 +3,8 @@
 ## Combine `estimate_diversity` results with Biodiverse-based results,
 ## and export results in various formats (GeoJSON, GeoPackage, tab-delimited)
 
+cat("Combining results and exporting spatial data\n\n")
+
 ## Function to load packages
 load_pckg <- function(pkg = "data.table"){
     suppressPackageStartupMessages( library(package = pkg, character.only = TRUE) )
