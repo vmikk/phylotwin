@@ -22,6 +22,8 @@ process subset_data {
 
     publishDir OUTDIR_1_SUB, mode: "${params.publish_dir_mode}", overwrite: true
 
+    containerOptions "-v ${projectDir}:${projectDir}"
+
     input:
       path occurrences
       path specieskeys
