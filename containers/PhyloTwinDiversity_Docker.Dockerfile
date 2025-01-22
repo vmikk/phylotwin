@@ -2,26 +2,24 @@ FROM rocker/r-ver:4.4.2
 
 ## Metadata
 LABEL maintainer="vladimir.mikryukov@ut.ee" \
-      version="v0.5" \
+      version="0.6.0" \
       description="PhyloNext/PhyloTwin diversity-analysis container"
-
-## Accept GITHUB_PAT as a build argument
-ARG GITHUB_PAT
 
 ## Set environment variables
 ENV LC_ALL=C.UTF-8 \
     LANG=C.UTF-8 \
-    DEBIAN_FRONTEND=noninteractive \
-    GITHUB_PAT=$GITHUB_PAT
+    DEBIAN_FRONTEND=noninteractive
 
 ## Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
         curl wget git less \
         default-jre parallel \
+        libudunits2-dev libgdal-dev libgeos-dev libproj-dev \
+        libmkl-rt libglpk-dev \
     && rm -rf /var/lib/apt/lists/*
 
 ## Install R packages
-RUN install2.r --error --skipmissing --skipinstalled --ncpus -1 \
+RUN install2.r --error --skipinstalled --ncpus -1 \
         optparse \
         R.utils \
         glue \
@@ -46,8 +44,12 @@ RUN install2.r --error --skipmissing --skipinstalled --ncpus -1 \
         qs \
         future \
         remotes \
-    && R -e 'remotes::install_github("crazycapivara/h3-r")' \
-    && R -e 'remotes::install_github("cran/PhyloMeasures")'
+        openxlsx \
+        && rm -rf /tmp/downloaded_packages \
+        && strip --strip-debug /usr/local/lib/R/site-library/*/libs/*.so
+
+RUN R -e 'remotes::install_github("crazycapivara/h3-r")' && \
+    R -e 'remotes::install_github("cran/PhyloMeasures")'
 
 ## Install phyloregion from GitHub
 RUN git clone --depth 1 https://github.com/darunabas/phyloregion.git \
