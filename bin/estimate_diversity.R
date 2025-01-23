@@ -285,6 +285,8 @@ if("PhyloEndemismStrict" %in% MEASURES){
 ######## Combine results
 
 cat("Combining results\n")
+
+
 RES <- do.call(what = data.table:::cbind.data.table, RES)
 RES[ , H3 := rownames(datm) ]
 setcolorder(RES, "H3")
@@ -301,30 +303,8 @@ RES[, Redundancy := ( 1 - (Richness / NumRecords) )]
 
 
 
-
-##########################################################
-########################################################## Prepare spatial data
-##########################################################
-
-cat("\n\n-------- Preparing spatial data --------\n\n")
-
-cat("..Preparing H3 polygons\n")
-H3_poly <- h3_to_geo_boundary_sf(RES$H3)
-
-cat("..Adding diversity estimates to H3 polygons\n")
-vars <- colnames(RES)[! colnames(RES) %in% "H3" ]
-H3_poly <- cbind(H3_poly, RES[, ..vars])
-
-cat("..Exporting polygons with divsity estimates in GeoPackage format\n")
-st_write(
-  obj   = H3_poly,
-  dsn   = paste0(OUTPUT, ".gpkg"),
-  layer = "diversity_estimates")      
-
-cat("..Exporting polygons with divsity estimates in GeoJSON format\n")
-st_write(
-  obj   = H3_poly,
-  dsn   = paste0(OUTPUT, ".geojson"))      
+# Top driving species in phyloregions
+# phyloregion::indicators
 
 
 ##########################################################
@@ -334,25 +314,14 @@ st_write(
 cat("\n\n-------- Exporting results --------\n\n")
 
 cat("Exporting QS file\n")
-qs::qsave(RES, paste0(OUTPUT, ".qs"), preset = "custom", algorithm = "zstd", compress_level = 14L, nthreads = THREADS)
+qs::qsave(RES, paste0(OUTPUT, ".qs"),
+  preset = "custom", algorithm = "zstd", compress_level = 8L, nthreads = THREADS)
 
-cat("Exporting tab-delimited file\n")
 
-## Add grid cell coordinates
-cat("..Adding geo-coordinates for grid cell centers\n")
-RES[, c("Latitude", "Longitude") := as.data.table(h3::h3_to_geo(H3)) ]
- 
-## Reorder columns
-cat("..Reordering columns\n")
-setcolorder(RES, c("H3", "Latitude", "Longitude"))
-
-cat("..Exporting tab-delimited file\n")
-fwrite(x = RES, file = paste0(OUTPUT, ".txt"), sep = "\t")
-
-cat("..Exporting a list of estimated diversity indices\n")
-inds <- colnames(RES)[! colnames(RES) %in% c("H3", "Latitude", "Longitude") ]
-fwrite(
-  x = data.table(DivIndices = inds),
-  file = "Div_indices.txt",
-  sep = "\t", col.names = FALSE)
+# cat("..Exporting a list of estimated diversity indices\n")
+# inds <- colnames(RES)[! colnames(RES) %in% c("H3", "Latitude", "Longitude") ]
+# fwrite(
+#   x = data.table(DivIndices = inds),
+#   file = "Div_indices.txt",
+#   sep = "\t", col.names = FALSE)
 
