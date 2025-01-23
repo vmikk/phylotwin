@@ -78,6 +78,19 @@ cat("  Number of threads:", THREADS, "\n")
 setDTthreads(threads = THREADS)
 
 
+
+##########################################################
+########################################################## For debugging
+##########################################################
+
+# OCC  <- "aggregated_counts.parquet"
+# TREE <- "Ferns_FTOL_1-7-0.nwk.gz"
+# DIV  <- "PD,MNTD,SES.PD,RPD,PhyloEndemismWeighted,CANAPE"
+# RANDOMIZATIONS <- 20
+# THREADS <- 4
+# OUTPUT <- "diversity_estimates"
+
+
 ##########################################################
 ########################################################## Load and reshape data
 ##########################################################
