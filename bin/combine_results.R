@@ -89,3 +89,50 @@ if(!is.na(ESTDIV) && !is.na(BIODIV)){
 }
 
 
+##########################################################
+########################################################## Prepare spatial data
+##########################################################
+
+cat("\n\n-------- Preparing spatial data --------\n\n")
+
+cat("..Preparing H3 polygons\n")
+H3_poly <- h3_to_geo_boundary_sf(RES$H3)
+
+
+cat("..Adding diversity estimates to H3 polygons\n")
+vars <- colnames(RES)[! colnames(RES) %in% "H3" ]
+H3_poly <- cbind(H3_poly, RES[, ..vars])
+
+cat("..Exporting polygons with divsity estimates in GeoPackage format\n")
+st_write(
+  obj   = H3_poly,
+  dsn   = paste0(OUTPUT, ".gpkg"),
+  layer = "diversity_estimates")
+
+cat("..Exporting polygons with divsity estimates in GeoJSON format\n")
+st_write(
+  obj   = H3_poly,
+  dsn   = paste0(OUTPUT, ".geojson"))
+
+
+##########################################################
+########################################################## Export results
+##########################################################
+
+
+cat("\n\n-------- Exporting tab-delimited file --------\n\n")
+
+## Add grid cell coordinates
+cat("..Adding geo-coordinates for grid cell centers\n")
+RES[, c("Latitude", "Longitude") := as.data.table(h3::h3_to_geo(H3)) ]
+ 
+## Reorder columns
+cat("..Reordering columns\n")
+setcolorder(RES, c("H3", "Latitude", "Longitude"))
+
+cat("..Exporting tab-delimited file\n")
+fwrite(x = RES, file = paste0(OUTPUT, ".txt"), sep = "\t")
+
+
+
+cat("\n\n-------- All done --------\n\n")
