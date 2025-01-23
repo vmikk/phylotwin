@@ -320,8 +320,11 @@ workflow BIODIVERSE {
 
       } // end of randomizations
 
-    // Output results as CSV
-    div_to_csv(aggregate_rnds_biodiv.out.Biodiv)
+      // Output results as CSV
+      div_to_csv(aggregate_rnds_biodiv.out.Biodiv)
+
+      // Merge Biodiverse results into a single table
+      merge_biodiverse_results(div_to_csv.out.csvs)
 
     emit:
         bdres = merge_biodiverse_results.out.bdres
