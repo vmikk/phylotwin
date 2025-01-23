@@ -90,7 +90,14 @@ tree <- read.tree(TREE)
 
 ## Load aggregated species occurrences
 cat("Loading aggregated species occurrences\n")
-occ <- read_parquet(OCC)
+occ <- try( read_parquet(OCC) )
+
+if("try-error" %in% class(occ) || nrow(occ) == 0){
+  cat("..NO SPECIES OCCURRENCES FOUND; exiting with code 99\n")
+  quit(status = 99)
+}
+
+## Convert to data.table
 setDT(occ)
 
 if(any(!occ$total_records >= 1)){
