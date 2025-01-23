@@ -81,10 +81,7 @@ process estimate_diversity {
       path tree
 
     output:
-      path "diversity_estimates.txt",        emit: txt,        optional: true
-      path "diversity_estimates.qs",         emit: qs,         optional: true
-      path "diversity_estimates.gpkg",       emit: geopackage, optional: true
-      path "diversity_estimates.geojson",    emit: geojson,    optional: true
+      path "estimate_diversity_results.qs", emit: qs, optional: true
 
     script:
     """
@@ -96,15 +93,15 @@ process estimate_diversity {
     estimate_diversity.R \
       --input       ${table} \
       --tree        ${tree} \
-      --output      diversity_estimates \
+      --output      estimate_diversity_results \
       --div         ${params.div} \
       --threads     ${task.cpus}
 
     exit_code=\$?
 
     # ## Compress GeoJSON file
-    # if [ -f diversity_estimates.geojson ]; then
-    #   gzip -4 diversity_estimates.geojson
+    # if [ -f estimate_diversity_results.geojson ]; then
+    #   gzip -4 estimate_diversity_results.geojson
     # fi
 
     echo "..Done"
