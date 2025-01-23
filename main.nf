@@ -119,7 +119,8 @@ process estimate_diversity {
 
 
 // Combine Biodiverse results with `estimate_diversity` results
-process combine_results {
+// Prepare spatial data for visualization
+process aggregate_spatial_results {
 
     label "container_phylotwin"
 
@@ -219,7 +220,7 @@ workflow {
     )
 
     // Combine Biodiverse results with `estimate_diversity` results
-    combine_results(
+    aggregate_spatial_results(
       estimate_diversity.out.qs,
       BIODIVERSE.out.bdres
     )
@@ -228,7 +229,7 @@ workflow {
   } else {
     // If Biodiverse is not enabled, use `estimate_diversity` results
 
-    combine_results(
+    aggregate_spatial_results(
       estimate_diversity.out.qs,
       Channel.fromPath("no_biodiverse", checkIfExists: false))
 
