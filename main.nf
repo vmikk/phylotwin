@@ -120,6 +120,33 @@ process estimate_diversity {
 }
 
 
+// Combine Biodiverse results with `estimate_diversity` results
+process combine_results {
+
+    label "container_phylotwin"
+
+    publishDir OUTDIR_2_DIV, mode: "${params.publish_dir_mode}", overwrite: true
+
+    input:
+      path biodiverse_results
+      path estimate_diversity_results
+
+    output:
+      path "diversity_estimates.geojson",    emit: geojson,    optional: true
+      path "diversity_estimates.gpkg",       emit: geopackage, optional: true
+      path "diversity_estimates.txt",        emit: txt,        optional: true
+
+    script:
+    """
+    combine_results.R \
+      --estdiv ${estimate_diversity_results} \
+      --biodiv ${biodiverse_results} \
+      --resolution ${params.resolution} \
+      --output     diversity_estimates
+    """
+}
+
+
 // Plot diversity indices (interactive map - Leaflet-based choropleth)
 process viz_leaflet {
 
