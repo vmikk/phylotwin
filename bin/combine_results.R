@@ -49,6 +49,12 @@ opt <- lapply(X = opt, FUN = to_na)
 if(is.na(opt$estdiv) && is.na(opt$biodiv)){
   cat("At least one of the input files with diversity estimates must be provided.\n", file=stderr()); stop()
 }
+if(! is.na(opt$estdiv) && ! file.exists(opt$estdiv)){
+  cat("Input file with diversity estimates does not exist.\n", file=stderr()); stop()
+}
+if(! is.na(opt$biodiv) && ! file.exists(opt$biodiv)){
+  cat("Input file with Biodiverse results does not exist.\n", file=stderr()); stop()
+}
 
 if(is.na(opt$resolution)){ cat("H3 resolution is not specified.\n", file=stderr()); stop() }
 if(opt$resolution < 1 || opt$resolution > 15){ cat("H3 resolution must be between 1 and 15.\n", file=stderr()); stop() }
