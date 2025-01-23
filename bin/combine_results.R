@@ -33,7 +33,17 @@ option_list <- list(
 opt <- parse_args(OptionParser(option_list = option_list))
 # print(opt)
 
-## Validation of arguments
+## Function to convert text "NA"s to NA
+to_na <- function(x){
+  if(x %in% c("NA", "null", "Null")){ x <- NA }
+  return(x)
+}
+
+## Replaces "null"s from Nextflow with NA
+opt <- lapply(X = opt, FUN = to_na)
+
+
+#### Validation of arguments
 
 ## At least one of input files must be provided
 if(is.na(opt$estdiv) && is.na(opt$biodiv)){
@@ -64,12 +74,12 @@ cat("  Output prefix:",         OUTPUT, "\n")
 
 cat("\n\n-------- Loading and merging tables --------\n\n")
 
-if(file.exists(ESTDIV)){
+if(!is.na(ESTDIV)){
   cat("..Loading `estimate_diversity` results\n")
   ESTDIVt <- qs::qread(ESTDIV)
 }
 
-if(file.exists(BIODIV)){
+if(!is.na(BIODIV)){
   cat("..Loading Biodiverse results\n")
   BIODIVt <- fread(BIODIV)
 }
