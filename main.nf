@@ -76,8 +76,6 @@ process estimate_diversity {
     // Code `99` is used to indicate that no species occurrences were found with the specified filters
     errorStrategy { task.exitStatus == 99 ? 'ignore' : 'retry' }
 
-    publishDir OUTDIR_2_DIV, mode: "${params.publish_dir_mode}", overwrite: true
-
     input:
       path table
       path tree
