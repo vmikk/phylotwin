@@ -57,3 +57,35 @@ cat("  H3 resolution:",         RESOLUTION, "\n")
 cat("  Output prefix:",         OUTPUT, "\n")
 
 
+
+##########################################################
+########################################################## Load and merge tables
+##########################################################
+
+cat("\n\n-------- Loading and merging tables --------\n\n")
+
+if(file.exists(ESTDIV)){
+  cat("..Loading `estimate_diversity` results\n")
+  ESTDIVt <- qs::qread(ESTDIV)
+}
+
+if(file.exists(BIODIV)){
+  cat("..Loading Biodiverse results\n")
+  BIODIVt <- fread(BIODIV)
+}
+
+## Merge tables
+if(!is.na(ESTDIV) && !is.na(BIODIV)){
+  cat("...Merging tables\n")
+  RES <- merge(x = ESTDIVt, y = BIODIVt, by = "H3", all.x = TRUE)
+} else if(!is.na(ESTDIV)){
+  cat("...Using `estimate_diversity` results\n")
+  RES <- ESTDIVt
+} else if(!is.na(BIODIV)){
+  cat("...Using Biodiverse results\n")
+  RES <- BIODIVt
+} else {
+  cat("...No input tables found.\n", file=stderr()); stop()
+}
+
+
