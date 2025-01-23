@@ -1,6 +1,12 @@
 #!/usr/bin/env Rscript
 
-## Estimate and visualize species diversity
+## Estimate diversity
+
+
+## Notes:
+# - Richness, NumRecords, and Redundancy index are always estimated
+
+cat("Estimating diversity\n\n")
 
 ## Function to load packages
 load_pckg <- function(pkg = "data.table"){
