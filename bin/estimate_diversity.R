@@ -13,14 +13,15 @@ load_pckg("optparse")
 load_pckg("data.table")
 load_pckg("PhyloMeasures")
 load_pckg("phyloregion")
-load_pckg("canaper")
-load_pckg("sf")
-load_pckg("h3")
 load_pckg("ape")
 load_pckg("arrow")
 load_pckg("dplyr")
 load_pckg("qs")
-load_pckg("future")
+# load_pckg("canaper")
+# load_pckg("future")  # currently, used only for CANAPE
+
+# load_pckg("SpadeR")
+# load_pckg("BiodiverseR")     # https://github.com/biogeospatial/BiodiverseR
 
 cat("\n Parsing command line arguments\n")
 
@@ -225,59 +226,57 @@ if("PhyloEndemismStrict" %in% MEASURES){
 }
 
 
-########## CANAPE
+########## CANAPE (canaper-based) -- in the pipeline, we use "native" Biodiverse implementation
 
-if("CANAPE" %in% MEASURES){
-  cat("..Estimating CANAPE (Categorical Analysis of Neo- And Paleo-Endemism)\n")
-
-  if(nrow(datt) <= 5){
-    cat("... WARNING: randomizations might be unreliable for small datasets\n")
-  }
-
-  ## Enable parallel backend for some metrics
-  if(THREADS > 1){
-    cat("... Enabling parallel backend\n")
-    plan(multicore, workers = THREADS)
-  }
-
-  cat("... Preparing data\n")
-  dattt <- copy(datt)
-  setnames(dattt, 
-    old = colnames(dattt)[ ! colnames(dattt) %in% "H3" ],
-    new = paste0("sp_", colnames(dattt)[ ! colnames(dattt) %in% "H3" ]) )
-  setDF(dattt)
-  rownames(dattt) <- dattt$H3
-  dattt$H3 <- NULL
-
-  treee <- tree
-  treee$tip.label <- paste0("sp_", treee$tip.label)
-
-  cat("... Generating a set of random communities\n")
-  rnd <- cpr_rand_test(
-    comm = dattt,
-    phy = treee,
-    metrics = c("pe", "rpe"),    # "pd", "rpd", 
-    n_reps = RANDOMIZATIONS,
-    null_model = "curveball",    # sequential algo for binary data (Strona et al., 2014), preserves row frequencies
-    n_iterations = 100000,       # for sequential null models
-    thin = 1,
-    tbl_out = TRUE)
-
-  ## Switch back to non-parallel mode
-  if(THREADS > 1){
-    cat("... Switching back to non-parallel mode\n")
-    plan(sequential)
-  }
-
-  cat("... Classifying endemism\n")
-  canape_res <- canaper::cpr_classify_endem(df = rnd)
-  if(any(canape_res$site != datt$H3)){
-    stop("Site names are not matching --- a fix should be implemented in the future\n")
-  }
-  RES <- c(RES, list(CANAPE = canape_res$endem_type ))
-}
-
-
+# if("CANAPE" %in% MEASURES){
+#   cat("..Estimating CANAPE (Categorical Analysis of Neo- And Paleo-Endemism)\n")
+# 
+#   if(nrow(datt) <= 5){
+#     cat("... WARNING: randomizations might be unreliable for small datasets\n")
+#   }
+# 
+#   ## Enable parallel backend for some metrics
+#   if(THREADS > 1){
+#     cat("... Enabling parallel backend\n")
+#     plan(multicore, workers = THREADS)
+#   }
+# 
+#   cat("... Preparing data\n")
+#   dattt <- copy(datt)
+#   setnames(dattt, 
+#     old = colnames(dattt)[ ! colnames(dattt) %in% "H3" ],
+#     new = paste0("sp_", colnames(dattt)[ ! colnames(dattt) %in% "H3" ]) )
+#   setDF(dattt)
+#   rownames(dattt) <- dattt$H3
+#   dattt$H3 <- NULL
+# 
+#   treee <- tree
+#   treee$tip.label <- paste0("sp_", treee$tip.label)
+# 
+#   cat("... Generating a set of random communities\n")
+#   rnd <- cpr_rand_test(
+#     comm = dattt,
+#     phy = treee,
+#     metrics = c("pe", "rpe"),    # "pd", "rpd", 
+#     n_reps = RANDOMIZATIONS,
+#     null_model = "curveball",    # sequential algo for binary data (Strona et al., 2014), preserves row frequencies
+#     n_iterations = 100000,       # for sequential null models
+#     thin = 1,
+#     tbl_out = TRUE)
+# 
+#   ## Switch back to non-parallel mode
+#   if(THREADS > 1){
+#     cat("... Switching back to non-parallel mode\n")
+#     plan(sequential)
+#   }
+# 
+#   cat("... Classifying endemism\n")
+#   canape_res <- canaper::cpr_classify_endem(df = rnd)
+#   if(any(canape_res$site != datt$H3)){
+#     stop("Site names are not matching --- a fix should be implemented in the future\n")
+#   }
+#   RES <- c(RES, list(CANAPE = canape_res$endem_type ))
+# }
 
 
 
