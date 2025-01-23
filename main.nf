@@ -126,8 +126,8 @@ process combine_results {
     publishDir OUTDIR_2_DIV, mode: "${params.publish_dir_mode}", overwrite: true
 
     input:
-      path biodiverse_results
       path estimate_diversity_results
+      path biodiverse_results
 
     output:
       path "diversity_estimates.geojson",    emit: geojson,    optional: true
@@ -135,10 +135,11 @@ process combine_results {
       path "diversity_estimates.txt",        emit: txt,        optional: true
 
     script:
+    def bdArg = biodiverse_results.name != 'no_biodiverse' ? "${biodiverse_results}" : 'NA'
     """
     combine_results.R \
-      --estdiv ${estimate_diversity_results} \
-      --biodiv ${biodiverse_results} \
+      --estdiv     ${estimate_diversity_results} \
+      --biodiv     ${bdArg} \
       --resolution ${params.resolution} \
       --output     diversity_estimates
     """
