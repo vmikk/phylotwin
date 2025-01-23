@@ -204,7 +204,7 @@ workflow {
   // Subset data
   subset_data(ch_occ, ch_spkeys, ch_poly)
 
-  // Estimate diversity
+  // Estimate diversity [should be always enabled, as we need Record summaries and Redundancy estimates]
   estimate_diversity(
     subset_data.out.occ_counts_long,
     ch_tree
@@ -218,7 +218,21 @@ workflow {
       ch_tree
     )
 
-  } // end of Biodiverse subworkflow
+    // Combine Biodiverse results with `estimate_diversity` results
+    combine_results(
+      estimate_diversity.out.qs,
+      BIODIVERSE.out.bdres
+    )
+
+    // end of Biodiverse subworkflow
+  } else {
+    // If Biodiverse is not enabled, use `estimate_diversity` results
+
+    combine_results(
+      estimate_diversity.out.qs,
+      Channel.fromPath("no_biodiverse", checkIfExists: false))
+
+  }
 
   // Plot diversity indices into HTML files
   if (params.noviz == false) {
