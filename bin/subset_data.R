@@ -29,6 +29,7 @@
 #   if no constraints are specified, all species keys from a phylogenetic tree are selected
 
 
+cat("Subsetting parquet data\n\n")
 
 ## Function to load packages
 load_pckg <- function(pkg = "data.table"){
