@@ -60,7 +60,7 @@
 ## Z-score interpretation:
 # the values outside the interval [-1.96,1.96] being significant for two tailed test with an alpha of 0.05, providing the number of samples is large. 
 
-
+cat("Combining Biodiverse results\n")
 
 ## Function to load packages
 load_pckg <- function(pkg = "data.table"){
