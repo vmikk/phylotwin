@@ -23,8 +23,8 @@ cat("\n Parsing command line arguments\n")
 ## Define the option parser
 option_list <- list(
     ## Input-output parameters
-    make_option(c("-e", "--estdiv"), type = "character", default = "diversity_estimates.qs",    help = "Results from `estimate_diversity` process (QS format)"),
-    make_option(c("-b", "--biodiv"), type = "character", default = "Biodiverse_results.txt.gz", help = "Results from Biodiverse subworkflow (tab-delimited format)"),
+    make_option(c("-e", "--estdiv"), type = "character", default = "estimate_diversity_results.qs", help = "Results from `estimate_diversity` process (QS format)"),
+    make_option(c("-b", "--biodiv"), type = "character", default = "Biodiverse_results.txt.gz",     help = "Results from Biodiverse subworkflow (tab-delimited format)"),
     make_option(c("-r", "--resolution"), action="store", default = 4, type='integer', help="H3 resolution (e.g., 4)"),
     make_option(c("-o", "--output"), type = "character", default = "diversity_estimates", help = "Output prefix")
 )
@@ -72,6 +72,14 @@ cat("  Biodiverse results:",    BIODIV, "\n")
 cat("  H3 resolution:",         RESOLUTION, "\n")
 cat("  Output prefix:",         OUTPUT, "\n")
 
+
+
+
+#### For debugging
+# ESTDIV <- "estimate_diversity_results.qs"
+# BIODIV <- "Biodiverse_results.txt.gz"
+# RESOLUTION <- 4
+# OUTPUT <- "diversity_estimates"
 
 
 ##########################################################
