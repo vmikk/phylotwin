@@ -28,11 +28,15 @@ process subset_data {
       path occurrences
       path specieskeys
       path polygon
+      val  tree
 
     output:
       path "aggregated_counts.parquet", emit: occ_counts_long
       path "aggregated_counts.csv",     emit: occ_counts_csv, optional: true
       path "dataset_keys.tsv",          emit: dataset_keys
+      path "phylogenetic_tree.nwk",     emit: phylogenetic_tree
+      // path "species_keys.txt.gz",    emit: species_keys
+      // path "h3_cells.txt.gz",        emit: h3_cells
 
     script:
     def spkeysArg = specieskeys.name != 'no_specieskeys' ? "--specieskeys ${specieskeys}" : ''
@@ -43,8 +47,7 @@ process subset_data {
 
     subset_data.R \
       --inpdir      ${occurrences} \
-      --output      ./results \
-      --tree        ${params.tree} \
+      --tree        ${tree} \
       --phylum      ${params.phylum} \
       --class       ${params.classs} \
       --order       ${params.order} \
