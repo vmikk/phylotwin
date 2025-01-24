@@ -10,6 +10,7 @@ load_pckg <- function(pkg = "data.table"){
 cat("Loading packages:\n")
 load_pckg("optparse")
 load_pckg("data.table")
+load_pckg("h3")
 
 cat("\n Parsing command line arguments\n")
 
@@ -36,13 +37,22 @@ PREFIX     <- opt$prefix
 
 cat("\n\n-------- Loading Biodiverse results --------\n\n")
 
-
 ## Function to read Biodiverse results
 read_bd <- function(file){
+  
   res <- fread(file, sep = ",")
+  
+  ## ELEMENT = concatenated coords 20.4069805389076:68.992705038507
+  res[, ELEMENT := NULL]
+  
   setnames(res,
     old = c("Axis_1", "Axis_0"),
     new = c("Latitude", "Longitude"))
+  
+  res[ , H3 := h3::geo_to_h3(res[, .(Latitude, Longitude)], res = RESOLUTION) ]
+  res[ , c("Latitude", "Longitude") := NULL ]
+  setcolorder(res, "H3")
+
   return(res)
 }
 
