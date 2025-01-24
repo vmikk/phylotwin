@@ -46,8 +46,8 @@ load_pckg("arrow")
 load_pckg("dplyr")
 load_pckg("qs")
 load_pckg("glue")
-load_pckg("openxlsx")
 load_pckg("h3")
+# load_pckg("openxlsx")
 # load_pckg("plyr")     # conflicts with dplyr
 # load_pckg("crayon")
 # load_pckg("geos")
@@ -59,7 +59,6 @@ cat("\n Parsing command line arguments\n")
 option_list <- list(
     ## Input-output parameters
     make_option(c("-i", "--inpdir"), type = "character", default = NULL, help = "Input - Directory with pre-processed species occurrence counts (Parquet format)"),
-    make_option(c("-o", "--output"), type = "character", default = NULL, help = "Output prefix"),
 
     ## Taxonomy filters
     make_option("--tree",        action="store", default=NA, type='character', help="Phylogenetic tree (Newick format) defining the 'major' group of interest"),
@@ -107,7 +106,6 @@ opt <- lapply(X = opt, FUN = to_na)
 ## Data for debugging
 # opt <- list(
 #   inpdir = paste0(getwd(), "/Filtered_parquet") ,
-#   output = paste0(getwd(), "/results"),
 #   tree = "Ferns_FTOL_1-7-0.nwk.gz",
 #   phylum = NA,
 #   class = NA,
@@ -129,7 +127,7 @@ opt <- lapply(X = opt, FUN = to_na)
 
 ## Validation of the required arguments
 if(is.na(opt$inpdir)){ cat("Input directory with pre-processed species occurrence counts in Parquet format is not specified.\n", file=stderr()); stop() }
-if(is.na(opt$output)){ cat("Output prefix is not specified.\n", file=stderr()); stop() }
+# if(is.na(opt$output)){ cat("Output prefix is not specified.\n", file=stderr()); stop() }
 if(is.na(opt$tree))  { cat("No phylogenetic tree specified.\n", file=stderr()); stop() }
 if(is.na(opt$data)){ cat("Path to the internal data of the pipeline is not specified.\n", file=stderr()); stop() }
 if(!dir.exists(opt$data)){ cat("Path to the internal data of the pipeline does not exist.\n", file=stderr()); stop() }
@@ -206,7 +204,6 @@ if(!is.na(opt$country)){
 
 ## Input parameters
 INPDIR <- opt$inpdir
-OUTPUT <- opt$output
 
 TREE   <- basename(to_na( opt$tree ) )   # NB. tree is specified as a string, not as a path -> built-in trees are used
 PHYLUM <- to_na( opt$phylum )
@@ -235,7 +232,6 @@ THREADS <- as.integer( opt$threads )
 
 cat("\nInput-output parameters:\n")
 cat("  Input directory:", INPDIR, "\n")
-cat("  Output prefix:", OUTPUT, "\n")
 
 cat("\nTaxonomy filters:\n")
 cat("  Tree:",   TREE, "\n")
