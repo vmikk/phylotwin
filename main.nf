@@ -240,7 +240,7 @@ workflow {
       ch_vizindices = Channel.from(params.viz.split(','))
 
       // Replicate diversity estimates for each index
-      ch_divests = ch_vizindices.combine(estimate_diversity.out.qs).map { it[1] }
+      ch_divests = ch_vizindices.combine(aggregate_spatial_results.out.txt).map { it[1] }
 
       // Plot diversity indices
       viz_leaflet(
