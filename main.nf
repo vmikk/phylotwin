@@ -203,12 +203,12 @@ workflow {
   // ch_countries_h3 = params.data + "/Countries_H3"
 
   // Subset data
-  subset_data(ch_occ, ch_spkeys, ch_poly)
+  subset_data(ch_occ, ch_spkeys, ch_poly, ch_tree)
 
   // Estimate diversity [should be always enabled, as we need Record summaries and Redundancy estimates]
   estimate_diversity(
     subset_data.out.occ_counts_long,
-    ch_tree
+    subset_data.out.phylogenetic_tree
   )
 
   // Biodiverse-based subworkflow
@@ -216,7 +216,7 @@ workflow {
 
     BIODIVERSE(
       subset_data.out.occ_counts_csv,
-      ch_tree
+      subset_data.out.phylogenetic_tree
     )
 
     // Combine Biodiverse results with `estimate_diversity` results
