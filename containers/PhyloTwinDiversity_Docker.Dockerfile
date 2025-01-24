@@ -37,6 +37,7 @@ RUN install2.r --error --skipinstalled --ncpus -1 \
         leaflet.extras2 \
         leafsync \
         webshot \
+        mapview \
         canaper \
         arrow \
         dplyr \
