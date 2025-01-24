@@ -5,7 +5,6 @@
 ## Usage:
 # Rscript bin/subset_data.R \
 #   --input  /path/to/input \
-#   --output /path/to/output \
 #   --tree   /path/to/tree.nwk \
 #   --phylum "Phylum1,Phylum2" \
 #   --class  "Class1,Class2" \
@@ -209,7 +208,7 @@ if(!is.na(opt$country)){
 INPDIR <- opt$inpdir
 OUTPUT <- opt$output
 
-TREE   <- to_na( opt$tree )
+TREE   <- basename(to_na( opt$tree ) )   # NB. tree is specified as a string, not as a path -> built-in trees are used
 PHYLUM <- to_na( opt$phylum )
 CLASS  <- to_na( opt$class )
 ORDER  <- to_na( opt$order )
@@ -368,6 +367,26 @@ if(length(SPECIESKEYS_SELECTED) == 0) {
   cat("No species selected for the analysis. Check your taxonomic filters or species keys file.\n", file=stderr())
   stop()
 }
+
+
+
+##########################################################
+########################################################## Prepare the phylogenetic tree
+##########################################################
+
+cat("\n\n-------- Preparing the phylogenetic tree --------\n\n")
+
+## Load the tree
+cat("..Loading the phylogenetic tree\n")
+tree <- read.tree( file.path(DATA, "Phylotrees", TREE) )
+
+## Subset phylogenetic tree to species present in the data
+cat("..Subsetting phylogenetic tree\n")
+tree <- keep.tip(tree, intersect(tree$tip.label, SPECIESKEYS_SELECTED))
+
+## Export the tree
+cat("..Exporting the phylogenetic tree\n")
+write.tree(tree, file = "phylogenetic_tree.nwk")
 
 
 ##########################################################
