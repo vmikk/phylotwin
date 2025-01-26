@@ -98,6 +98,9 @@ if(opt$resolution < 1 || opt$resolution > 15){ cat("H3 resolution must be betwee
 ## Input parameters
 INPDIR     <- opt$inpdir
 PREFIX     <- opt$prefix
+RESOLUTION <- opt$resolution
+OUTPUT     <- opt$output
+
 
 ##########################################################
 ########################################################## Taxonomy-based filters
