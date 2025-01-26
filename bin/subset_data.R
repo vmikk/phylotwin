@@ -395,8 +395,8 @@ write.tree(tree, file = "phylogenetic_tree.nwk")
 cat("\n\n-------- Grid-cell-based filters --------\n\n")
 
 ## Function to fetch H3 cells from WKT
-get_h3_cells_from_wkt <- function(wkt, h3res) {
-  # wkt - vectort of polygons in WKT format
+get_h3_cells_from_wkt <- function(wkt, h3res = RESOLUTION) {
+  # wkt   - vector of polygons in WKT format
   # h3res - H3 resolution
 
   ## Export to file
@@ -416,7 +416,7 @@ get_h3_cells_from_wkt <- function(wkt, h3res) {
     args = c(
       "-i", tmp_wkt, 
       "-o", tmp_h3, 
-      "-r", RESOLUTION, 
+      "-r", h3res, 
       "-a", "experimental", 
       "-c", "CONTAINMENT_OVERLAPPING"),
     stdout = "", stderr = "",             # output stdout and stderr to R console
