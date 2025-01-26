@@ -80,11 +80,20 @@ option_list <- list(
     ## Input-output parameters
     make_option(c("-i", "--inpdir"), type = "character", default = ".",   help = "Input directory"),
     make_option(c("-p", "--prefix"), type = "character", default = "RND", help = "Biodiverse prefix of intput files"),
+    make_option(c("-r", "--resolution"), action="store", default=4, type='integer', help="H3 resolution (e.g., 4)"),
+    make_option(c("-o", "--output"), type = "character", default = "Biodiverse_results.txt", help = "Output file name")
 )
 
 ## Parse the command line arguments
 opt <- parse_args(OptionParser(option_list = option_list))
 # print(opt)
+
+## Validation of the required arguments
+if(is.na(opt$inpdir)){ cat("Input directory is not specified.\n", file=stderr()); stop() }
+if(is.na(opt$output)){ cat("Output prefix is not specified.\n", file=stderr()); stop() }
+if(is.na(opt$resolution)){ cat("H3 resolution is not specified.\n", file=stderr()); stop() }
+if(opt$resolution < 1 || opt$resolution > 15){ cat("H3 resolution must be between 1 and 15.\n", file=stderr()); stop() }
+
 
 ## Input parameters
 INPDIR     <- opt$inpdir
