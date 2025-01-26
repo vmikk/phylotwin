@@ -44,6 +44,7 @@ process subset_data {
     def spkeysArg = specieskeys.name != 'no_specieskeys' ? "--specieskeys ${specieskeys}" : ''
     def polyArg = polygon.name != 'no_polygon' ? "--polygon ${polygon}" : ''
     def csvArg  = params.bd_indices ? "--csv TRUE" : ""
+    def duckdbArg = (workflow.containerEngine == 'docker' || workflow.containerEngine == 'singularity') ? '--duckdb_extdir "/usr/local/bin/duckdb_ext"' : ''
     """
     echo -e "Subsetting data\n"
 
@@ -65,6 +66,7 @@ process subset_data {
       ${polyArg} \
       --data        ${params.data} \
       ${csvArg} \
+      ${duckdbArg} \
       --threads     ${task.cpus}
 
     echo "..Done"
