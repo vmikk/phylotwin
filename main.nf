@@ -1,7 +1,9 @@
 #!/usr/bin/env nextflow
 
 
-println( "Running PhyloTwin diversity estimation pipeline, version ${workflow.manifest.version}\n" )
+ver = "version " + workflow.manifest.version
+if (workflow.commitId) { ver += " revision " + workflow.commitId }
+println( "Running PhyloTwin diversity estimation pipeline, ${ver}\n" )
 
 // Path to the directory with built-in phylogenetic trees
 def treesDir = "${projectDir}/data/Phylotrees"
