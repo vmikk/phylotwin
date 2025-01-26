@@ -101,6 +101,14 @@ PREFIX     <- opt$prefix
 RESOLUTION <- opt$resolution
 OUTPUT     <- opt$output
 
+cat("\nInput-output parameters:\n")
+cat("  Input directory:",   INPDIR, "\n")
+cat("  Biodiverse prefix:", PREFIX, "\n")
+cat("  H3 resolution:",     RESOLUTION, "\n")
+cat("  Output file:",       OUTPUT, "\n")
+
+
+
 
 ##########################################################
 ########################################################## Taxonomy-based filters
