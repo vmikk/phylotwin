@@ -117,6 +117,64 @@ read_bd <- function(file){
   return(res)
 }
 
+## Get the list of tables from Biodiverse
+fls <- list.files(
+  path = INPDIR,
+  pattern = paste0(PREFIX, "_.*\\.csv$"),
+  full.names = TRUE, recursive = FALSE, include.dirs = FALSE)
+
+
+## Initialize the list of results
+RES <- list()
+
+## Observed diversity values - RND_SPATIAL_RESULTS.csv
+fl_obs <- file.path(INPDIR, paste0(PREFIX, "_SPATIAL_RESULTS.csv"))
+if(fl_obs %in% fls){
+  cat("..Observed indices\n")
+  RES$obs <- read_bd(fl_obs)
+}
+
+## SES-scores - RND_rand--z_scores--SPATIAL_RESULTS.csv
+fl_ses <- file.path(INPDIR, paste0(PREFIX, "_rand--z_scores--SPATIAL_RESULTS.csv"))
+if(fl_ses %in% fls){
+  cat("..SES-scores\n")
+  RES$ses <- read_bd(fl_ses)
+
+  ## Rename columns
+  s_cols <- colnames(RES$ses)[ ! colnames(RES$ses) %in% "H3" ]
+  setnames(
+    x   = RES$ses,
+    old = s_cols,
+    new = paste0(s_cols, "__SES"))
+  rm(s_cols)
+}
+
+## P-values - RND_rand--p_rank--SPATIAL_RESULTS.csv
+fl_p <- file.path(INPDIR, paste0(PREFIX, "_rand--p_rank--SPATIAL_RESULTS.csv"))
+if(fl_p %in% fls){
+  cat("..P-values\n")
+  RES$p <- read_bd(fl_p)
+
+  ## Rename columns
+  p_cols <- colnames(RES$p)[ ! colnames(RES$p) %in% "H3" ]
+  setnames(
+    x   = RES$p,
+    old = p_cols,
+    new = paste0(p_cols, "__Pvalue"))
+  rm(p_cols)
+}
 
 
 
+## Merge the data into a single table
+cat("\n\n-------- Merging data into a single table --------\n\n")
+
+merge_dt <- function(x,y){ merge(x, y, by = "H3", all.x = TRUE) }
+
+RESULTS <- Reduce(f = merge_dt, x = RES)
+
+## Export the results
+cat("Exporting the results\n")
+fwrite(x = RESULTS, file = OUTPUT, sep = "\t")
+
+cat("Done\n")
