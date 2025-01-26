@@ -87,6 +87,7 @@ option_list <- list(
     make_option("--data", action="store", default="./data", type='character', help="Path to the internal data of the pipeline"),
     make_option("--csv", action="store", default=FALSE, type='logical', help="Export aggregated counts to CSV (default, FALSE)"),
     make_option("--duckdb_memory", action="store", default=NA, type='character', help="Memory limit for DuckDB (e.g., 10GB)"),
+    make_option("--duckdb_extdir", action="store", default=NA, type='character', help="Path to the DuckDB extensions directory"),
     make_option("--threads", action="store", default=2, type='integer', help="Number of CPUs to use")
 )
 
@@ -205,29 +206,30 @@ if(!is.na(opt$country)){
 ## Input parameters
 INPDIR <- opt$inpdir
 
-TREE   <- basename(to_na( opt$tree ) )   # NB. tree is specified as a string, not as a path -> built-in trees are used
-PHYLUM <- to_na( opt$phylum )
-CLASS  <- to_na( opt$class )
-ORDER  <- to_na( opt$order )
-FAMILY <- to_na( opt$family )
-GENUS  <- to_na( opt$genus )
-SPECIESKEYS  <- to_na( opt$specieskeys )
+TREE   <- basename( opt$tree )   # NB. tree is specified as a string, not as a path -> built-in trees are used
+PHYLUM <- opt$phylum
+CLASS  <- opt$class
+ORDER  <- opt$order
+FAMILY <- opt$family
+GENUS  <- opt$genus
+SPECIESKEYS <- opt$specieskeys
 
 RESOLUTION <- opt$resolution
-COUNTRY <- to_na( opt$country )
-LATMIN  <- as.numeric( to_na(opt$latmin) )
-LATMAX  <- as.numeric( to_na(opt$latmax) )
-LONMIN  <- as.numeric( to_na(opt$lonmin) )
-LONMAX  <- as.numeric( to_na(opt$lonmax) )
-POLYGON <- to_na( opt$polygon )
+COUNTRY <- opt$country
+LATMIN  <- as.numeric( opt$latmin )
+LATMAX  <- as.numeric( opt$latmax )
+LONMIN  <- as.numeric( opt$lonmin )
+LONMAX  <- as.numeric( opt$lonmax )
+POLYGON <- opt$polygon
 
-MINYEAR <- as.numeric(to_na( opt$minyear) )
-MAXYEAR <- as.numeric(to_na( opt$maxyear) )
-BASISOFRECORD <- to_na( opt$basisofrecord )
+MINYEAR <- as.numeric( opt$minyear )
+MAXYEAR <- as.numeric( opt$maxyear )
+BASISOFRECORD <- opt$basisofrecord
 
 DATA <- opt$data
 CSV  <- opt$csv
-DUCKDB_MEMORY <- to_na( opt$duckdb_memory )
+DUCKDB_MEMORY  <- opt$duckdb_memory
+DUCKDB_EXT_DIR <- ifelse( is.na(opt$duckdb_extdir), yes = "", no = opt$duckdb_extdir)
 THREADS <- as.integer( opt$threads )
 
 cat("\nInput-output parameters:\n")
@@ -257,6 +259,7 @@ cat("\nMiscellaneous parameters:\n")
 cat("  Internal data of the pipeline: ", DATA, "\n")
 cat("  Export aggregated counts to CSV:", CSV, "\n")
 cat("  DuckDB memory limit:", DUCKDB_MEMORY, "\n")
+cat("  DuckDB extensions directory:", DUCKDB_EXT_DIR, "\n")
 cat("  Number of threads:", THREADS, "\n")
 
 
@@ -418,7 +421,9 @@ get_h3_cells_from_wkt <- function(wkt, h3res = RESOLUTION) {
       "-o", tmp_h3, 
       "-r", h3res, 
       "-a", "experimental", 
-      "-c", "CONTAINMENT_OVERLAPPING"),
+      "-c", "CONTAINMENT_OVERLAPPING",
+      "-t", THREADS,
+      "-e", DUCKDB_EXT_DIR),
     stdout = "", stderr = "",             # output stdout and stderr to R console
     wait = TRUE)
 
