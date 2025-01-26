@@ -19,7 +19,7 @@ echo "Running script to convert WKT polygons to H3 cells [$(basename $0)]"
 
 ## Function to display usage information
 usage() {
-    echo "Usage: $0 -i INPUT -o OUTPUT [-r RESOLUTION] [-a ALGORITHM] [-c CONTAINMENT] [-t THREADS] [-m MEMORY] [-x TEMP_DIR]"
+    echo "Usage: $0 -i INPUT -o OUTPUT [-r RESOLUTION] [-a ALGORITHM] [-c CONTAINMENT] [-t THREADS] [-m MEMORY] [-x TEMP_DIR] [-e EXT_DIR]"
     echo "  -i INPUT          : Input directory containing Parquet files"
     echo "  -o OUTPUT         : Output Parquet file path"
     echo "  -r H3_RESOLUTION  : H3 resolution (e.g., 4)"
@@ -47,7 +47,7 @@ TEMP_DIR=""
 EXT_DIR=""
 
 ## Parse command-line options
-while getopts "i:o:r:a:c:t:m:x:e" opt; do
+while getopts "i:o:r:a:c:t:m:x:e:" opt; do
     case $opt in
         i) INPUT="$OPTARG" ;;
         o) OUTPUT="$OPTARG" ;;
