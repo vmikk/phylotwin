@@ -164,6 +164,26 @@ if(fl_p %in% fls){
   rm(p_cols)
 }
 
+## CANAPE results - RND_rand--CANAPE--.csv
+fl_canape <- file.path(INPDIR, paste0(PREFIX, "_rand--CANAPE--.csv"))
+if(fl_canape %in% fls){
+  cat("..CANAPE\n")
+  RES$canape <- read_bd(fl_canape)
+
+  ## Parse codes
+  RES$canape[ , CANAPE := fcase(
+    CANAPE_CODE == 0, "non-significant",
+    CANAPE_CODE == 1, "NEO",
+    CANAPE_CODE == 2, "PALAEO",
+    CANAPE_CODE == 3, "MIXED",
+    CANAPE_CODE == 4, "SUPER"
+    ) ]
+
+  RES$canape[ , c("CANAPE_CODE", "MIXED", "NEO", "PALAEO", "SUPER") := NULL ]
+}
+
+
+
 
 
 ## Merge the data into a single table
