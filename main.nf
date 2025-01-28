@@ -2,7 +2,7 @@
 
 
 ver = "version " + workflow.manifest.version
-if (workflow.commitId) { ver += " revision " + workflow.commitId }
+if (workflow.commitId) { ver += " revision " + workflow.commitId.substring(0, 7) }
 println( "Running PhyloTwin diversity estimation pipeline, ${ver}\n" )
 
 // Path to the directory with built-in phylogenetic trees
