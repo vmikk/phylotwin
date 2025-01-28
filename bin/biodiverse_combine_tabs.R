@@ -203,6 +203,35 @@ if(fl_canape %in% fls){
 }
 
 
+## Hurlbert results - RND_HURLBERT_ES.csv
+fl_hurlbert <- file.path(INPDIR, paste0(PREFIX, "_HURLBERT_ES.csv"))
+if(fl_hurlbert %in% fls){
+  cat("..Hurlbert\n")
+  RES$hurlbert <- read_bd(fl_hurlbert)
+
+  ## Rename columns
+  h_cols <- colnames(RES$hurlbert)[ ! colnames(RES$hurlbert) %in% "H3" ]
+  setnames(
+    x   = RES$hurlbert,
+    old = h_cols,
+    new = paste0("ES_", h_cols))
+  rm(h_cols)
+}
+
+## Hurlbert effect sizes - RND_rand--z_scores--HURLBERT_ES.csv
+fl_hurlbert_ses <- file.path(INPDIR, paste0(PREFIX, "_rand--z_scores--HURLBERT_ES.csv"))
+if(fl_hurlbert_ses %in% fls){
+  cat("..Hurlbert effect sizes\n")
+  RES$hurlbert_ses <- read_bd(fl_hurlbert_ses)
+
+  ## Rename columns
+  h_cols <- colnames(RES$hurlbert_ses)[ ! colnames(RES$hurlbert_ses) %in% "H3" ]
+  setnames(
+    x   = RES$hurlbert_ses,
+    old = h_cols,
+    new = paste0("ES_", h_cols, "__SES"))
+  rm(h_cols)
+}
 
 
 
