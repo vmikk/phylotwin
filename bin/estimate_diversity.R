@@ -106,7 +106,28 @@ cat("\n\n-------- Loading data --------\n\n")
 
 ## Load phylogenetic tree
 cat("Loading phylogenetic tree: ", TREE, "\n")
-tree <- read.tree(TREE)
+
+## Function to load phylogenetic tree
+load_tree <- function(tree_file){
+  ## Check if file is gzip-compressed and get the base file name
+  is_gz <- grepl("\\.gz$", tree_file, ignore.case = TRUE)
+  base_file <- if (is_gz) sub("\\.gz$", "", tree_file, ignore.case = TRUE) else tree_file
+  
+  ## Extract the file extension (in lower case)
+  ext <- tolower(tools::file_ext(base_file))
+
+  ## Load tree in Nexus format
+  if (ext %in% c("nex", "nexus")) {
+    TRE <- ape::read.nexus(file = tree_file)
+  } else if (ext %in% c("tre", "nwk", "newick")) {
+    TRE <- ape::read.tree(file = tree_file)
+  } else {
+    stop("Unsupported file extension: ", ext)
+  }
+  return(TRE)
+}
+
+tree <- load_tree(TREE)
 
 ## Load aggregated species occurrences
 cat("Loading aggregated species occurrences\n")
@@ -132,7 +153,7 @@ occ[ , PA := 1 ]
 cat("Reshaping species occurrences to wide format\n")
 datt <- dcast(
   data = occ,
-  formula = H3 ~ specieskey,
+  formula = H3 ~ species,
   value.var = "PA",            # value.var = "total_records",
   fun.aggregate = sum
 )
