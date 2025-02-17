@@ -21,6 +21,12 @@
 #   --duckdb_memory 10GB \
 #   --threads 2
 
+## Output:
+# - `species_names.txt.gz`            - Species names
+# - `phylogenetic_tree.nex`           - Phylogenetic tree (Nexus format) with a subset of species
+# - `aggregated_counts.{parquet,csv}` - Aggregated species occurrences
+# - `h3_cells.txt.gz`                 - List of H3 cells
+# - `dataset_keys.tsv`                - List of dataset keys
 
 ## Notes:
 # - Taxonomy filters are applied with AND condtion for the taxonomic ranks,
