@@ -5,13 +5,13 @@
 ## Usage:
 # Rscript bin/subset_data.R \
 #   --input  /path/to/input \
-#   --tree   /path/to/tree.nwk \
+#   --tree   /path/to/tree.nex.gz \
 #   --phylum "Phylum1,Phylum2" \
 #   --class  "Class1,Class2" \
 #   --order  "Order1,Order2" \
 #   --family "Family1,Family2" \
 #   --genus  "Genus1,Genus2" \
-#   --specieskeys /path/to/specieskeys.txt \
+#   --specieslist /path/to/specieslist.txt \
 #   --resolution 4 \
 #   --country "EE,FI,DK,NO,SE" \
 #   --latmin 54.8 --latmax 61 \
@@ -61,13 +61,13 @@ option_list <- list(
     make_option(c("-i", "--inpdir"), type = "character", default = NULL, help = "Input - Directory with pre-processed species occurrence counts (Parquet format)"),
 
     ## Taxonomy filters
-    make_option("--tree",        action="store", default=NA, type='character', help="Phylogenetic tree (Newick format) defining the 'major' group of interest"),
+    make_option("--tree",        action="store", default=NA, type='character', help="Phylogenetic tree (Nexus format) defining the 'major' group of interest"),
     make_option("--phylum",      action="store", default=NA, type='character', help="Comma-separated list of phyla to select"),
     make_option("--class",       action="store", default=NA, type='character', help="Comma-separated list of classes to select"),
     make_option("--order",       action="store", default=NA, type='character', help="Comma-separated list of orders to select"),
     make_option("--family",      action="store", default=NA, type='character', help="Comma-separated list of families to select"),
     make_option("--genus",       action="store", default=NA, type='character', help="Comma-separated list of genera to select"),
-    make_option("--specieskeys", action="store", default=NA, type='character', help="File with user-supplied GBIF specieskeys"),
+    make_option("--specieslist", action="store", default=NA, type='character', help="File with user-supplied species names"),
 
     ## Spatial filters
     make_option("--resolution", action="store", default=4, type='integer', help="H3 resolution (e.g., 4)"),
@@ -107,13 +107,13 @@ opt <- lapply(X = opt, FUN = to_na)
 ## Data for debugging
 # opt <- list(
 #   inpdir = paste0(getwd(), "/Filtered_parquet") ,
-#   tree = "Ferns_FTOL_1-7-0.nwk.gz",
+#   tree = "Ferns_FTOL_1-7-0.nex.gz",
 #   phylum = NA,
 #   class = NA,
 #   order = NA,
 #   family = NA,
 #   genus = NA,
-#   specieskeys = NA,  # paste0(pth, "test_data/test_spkeys.txt"),
+#   specieslist = NA,  # paste0(pth, "test_data/test_spnames.txt"),
 #   resolution = 4,
 #   country = "EE,FI,DK,NO,SE",
 #   latmin = 54.8, latmax = 61,
@@ -134,7 +134,7 @@ if(is.na(opt$data)){ cat("Path to the internal data of the pipeline is not speci
 if(!dir.exists(opt$data)){ cat("Path to the internal data of the pipeline does not exist.\n", file=stderr()); stop() }
 
 if(!is.na(opt$polygon) && !file.exists(opt$polygon)){ cat("Spatial filter: The specified polygon file does not exist.\n", file=stderr()); stop() }
-if(!is.na(opt$specieskeys) && !file.exists(opt$specieskeys)){ cat("The specified file with specieskeys does not exist.\n", file=stderr()); stop() }
+if(!is.na(opt$specieslist) && !file.exists(opt$specieslist)){ cat("The specified file with species names does not exist.\n", file=stderr()); stop() }
 
 if(is.na(opt$resolution)){ cat("H3 resolution is not specified.\n", file=stderr()); stop() }
 if(opt$resolution < 1 || opt$resolution > 6){ cat("H3 resolution must be between 1 and 6.\n", file=stderr()); stop() }
@@ -214,7 +214,7 @@ CLASS  <- opt$class
 ORDER  <- opt$order
 FAMILY <- opt$family
 GENUS  <- opt$genus
-SPECIESKEYS <- opt$specieskeys
+SPECIESLIST <- opt$specieslist
 
 RESOLUTION <- opt$resolution
 COUNTRY <- opt$country
@@ -244,7 +244,7 @@ cat("  Class:",  CLASS, "\n")
 cat("  Order:",  ORDER, "\n")
 cat("  Family:", FAMILY, "\n")
 cat("  Genus:",  GENUS, "\n")
-cat("  Specieskeys:", SPECIESKEYS, "\n")
+cat("  Species list:", SPECIESLIST, "\n")
 
 cat("\nSpatial filters:\n")
 cat("  Country:", COUNTRY, "\n")
@@ -275,8 +275,8 @@ setDTthreads(threads = THREADS)
 
 cat("\n\n-------- Taxonomy-based filters --------\n\n")
 
-## Initialize species keys
-SPECIESKEYS_SELECTED <- vector(mode = "character")
+## Initialize species names
+SPECIES_SELECTED <- vector(mode = "character")
 
 ## Based on the specified phylogenetic tree, load corresponding taxonomy table
 cat("\nLoading taxonomic data for the specified phylogenetic tree\n")
@@ -290,6 +290,12 @@ curated_trees <- c(
 if(basename(TREE) %in% curated_trees){
   cat("...using one of the curated phylogenies\n")
 
+  tree_path <- file.path(DATA, "Phylotrees", basename(TREE))
+  if(!file.exists(tree_path)){
+    cat("File with phylogenetic tree does not exist (", tree_path, ").\n", file=stderr())
+    stop()
+  }
+
   tax_table <- file.path(DATA, "TaxonomyTables", "CuratedTrees_TaxonomyTable.parquet")
 
   if(!file.exists(tax_table)){
@@ -297,7 +303,8 @@ if(basename(TREE) %in% curated_trees){
     stop()
   }
 
-  tree_id <- sub(pattern = "\\.nwk.gz$", replacement = "", x = basename(TREE))
+  tree_id <- sub(pattern = "\\.nex.gz$", replacement = "", x = basename(TREE))
+  tree_id <- sub(pattern = "\\.nex$",    replacement = "", x = tree_id)
 }
 
 ## Load taxonomy table
@@ -344,27 +351,27 @@ if(is.na(PHYLUM) && is.na(CLASS) && is.na(ORDER) && is.na(FAMILY) && is.na(GENUS
 }
 
 ## Get species keys from filtered taxonomy
-SPECIESKEYS_SELECTED <- c(SPECIESKEYS_SELECTED, unique(tax_table$specieskey))
+SPECIES_SELECTED <- na.omit( c(SPECIES_SELECTED, unique(tax_table$species)) )
 
 ## User-supplied species keys
-if(! is.na(SPECIESKEYS)) {
-  cat("\nLoading user-supplied species keys\n")
-  USER_SPECIESKEYS <- fread(SPECIESKEYS, header = FALSE)$V1
+if(! is.na(SPECIESLIST)) {
+  cat("\nLoading user-supplied species names\n")
+  USER_SPECIESNAMES <- fread(SPECIESLIST, header = FALSE)$V1
   
-  if(length(USER_SPECIESKEYS) == 0){
-    cat("...No species keys found in the user-supplied file - ignoring it\n", file=stderr())
+  if(length(USER_SPECIESNAMES) == 0){
+    cat("...No species names found in the user-supplied file - ignoring it\n", file=stderr())
   } else {
-    cat("...number of records in user-supplied species keys:", length(USER_SPECIESKEYS), "\n")
-    SPECIESKEYS_SELECTED <- unique(c(SPECIESKEYS_SELECTED, USER_SPECIESKEYS))
+    cat("...number of records in user-supplied species names:", length(USER_SPECIESNAMES), "\n")
+    SPECIES_SELECTED <- na.omit( unique(c(SPECIES_SELECTED, USER_SPECIESNAMES)) )
   }
   
 }
 
 
-cat("The total number of species keys selected:", length(SPECIESKEYS_SELECTED), "\n")
+cat("The total number of species keys selected:", length(SPECIES_SELECTED), "\n")
 
 ## Validate
-if(length(SPECIESKEYS_SELECTED) == 0) {
+if(length(SPECIES_SELECTED) == 0) {
   cat("No species selected for the analysis. Check your taxonomic filters or species keys file.\n", file=stderr())
   stop()
 }
@@ -379,15 +386,20 @@ cat("\n\n-------- Preparing the phylogenetic tree --------\n\n")
 
 ## Load the tree
 cat("..Loading the phylogenetic tree\n")
-tree <- read.tree( file.path(DATA, "Phylotrees", TREE) )
+tree <- read.nexus( file.path(DATA, "Phylotrees", TREE) )
 
 ## Subset phylogenetic tree to species present in the data
 cat("..Subsetting phylogenetic tree\n")
-tree <- keep.tip(tree, intersect(tree$tip.label, SPECIESKEYS_SELECTED))
+tree <- keep.tip(tree, intersect(tree$tip.label, SPECIES_SELECTED))
+
+if(length(tree$tip.label) == 0){
+  cat("ERROR: No species found in the data! Check your taxonomic filters or species keys file.\n", file=stderr())
+  stop()
+}
 
 ## Export the tree
 cat("..Exporting the phylogenetic tree\n")
-write.tree(tree, file = "phylogenetic_tree.nwk")
+ape::write.nexus(tree, file = "phylogenetic_tree.nex")
 
 
 ##########################################################
@@ -591,7 +603,7 @@ cat("\n\n-------- Preparing the database query --------\n\n")
 if(!length(HEXES) > 0){
   stop("No H3 cells selected for the analysis. Check your spatial filters.\n")
 }
-if(!length(SPECIESKEYS_SELECTED) > 0){
+if(!length(SPECIES_SELECTED) > 0){
   stop("No species keys selected for the analysis. Check your taxonomic filters or species keys file.\n")
 }
 
@@ -603,8 +615,8 @@ fwrite(
   sep = "\t", quote = FALSE, col.names = TRUE, compress = "gzip")
 
 fwrite(
-  x = data.table(specieskey = sort(SPECIESKEYS_SELECTED)),
-  file = "species_keys.txt.gz",
+  x = data.table(species = sort(SPECIES_SELECTED)),
+  file = "species_selected.txt.gz",
   sep = "\t", quote = FALSE, col.names = TRUE, compress = "gzip")
 
 
@@ -632,9 +644,9 @@ CREATE TEMP TABLE h3_cells AS
 SELECT h3_cell AS h3_cell 
 FROM read_csv('{h3_cells}', header=true, delim='\\t');
 
-CREATE TEMP TABLE species_keys AS 
-SELECT CAST(specieskey AS BIGINT) AS specieskey 
-FROM read_csv('{species_keys}', header=true, delim='\\t');
+CREATE TEMP TABLE species_selected AS 
+SELECT CAST(species AS VARCHAR) AS species
+FROM read_csv('{species_selected}', header=true, delim='\\t');
 
 -- Main filtered aggregation
 COPY (
@@ -642,9 +654,9 @@ COPY (
         SELECT *
         FROM read_parquet('{INPDIR}/*.parquet')
         WHERE H3 IN (SELECT h3_cell FROM h3_cells)
-        AND specieskey IN (SELECT specieskey FROM species_keys)",
-  h3_cells     = "h3_cells.txt.gz",
-  species_keys = "species_keys.txt.gz")
+        AND species IN (SELECT species FROM species_selected)",
+  h3_cells         = "h3_cells.txt.gz",
+  species_selected = "species_selected.txt.gz")
 
 if(! is.na(MINYEAR)){ main_query <- glue(main_query, " AND year >= {MINYEAR}") }
 if(! is.na(MAXYEAR)){ main_query <- glue(main_query, " AND year <= {MAXYEAR}") }
@@ -654,10 +666,10 @@ main_query <- glue(
     )
     SELECT 
         H3,
-        specieskey,
+        species,
         SUM(record_count) as total_records
     FROM filtered_data
-    GROUP BY H3, specieskey
+    GROUP BY H3, species
 ) TO '{output_parquet_long}' (FORMAT 'parquet', COMPRESSION 'ZSTD', COMPRESSION_LEVEL 5);",
   output_parquet_long = "aggregated_counts.parquet")
 
@@ -669,7 +681,7 @@ COPY (
         SELECT *
         FROM read_parquet('{INPDIR}/*.parquet')
         WHERE H3 IN (SELECT h3_cell FROM h3_cells)
-        AND specieskey IN (SELECT specieskey FROM species_keys)")
+        AND species IN (SELECT species FROM species_selected)")
 
 if(! is.na(MINYEAR)){ main_query <- glue(main_query, " AND year >= {MINYEAR}") }
 if(! is.na(MAXYEAR)){ main_query <- glue(main_query, " AND year <= {MAXYEAR}") }
@@ -734,8 +746,8 @@ if(CSV == TRUE){
 
     ## Reorder columns
     cat("..Reordering data\n")
-    setcolorder(aggregated_counts, c("H3", "Latitude", "Longitude", "specieskey", "total_records"))
-    setorder(aggregated_counts, H3, specieskey)
+    setcolorder(aggregated_counts, c("H3", "Latitude", "Longitude", "species", "total_records"))
+    setorder(aggregated_counts, H3, species)
 
     ## Export to CSV
     cat("..Exporting CSV file\n")
