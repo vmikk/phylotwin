@@ -282,12 +282,34 @@ SPECIES_SELECTED <- vector(mode = "character")
 cat("\nLoading taxonomic data for the specified phylogenetic tree\n")
   
 ## Get the name of taxonomy table (the same prefix as for the tree file)
-curated_trees <- c(
-  "Ferns_FTOL_1-7-0.nwk.gz", "FishTree.nwk.gz", "Henriquez-Piskulich_2024_BeetreeOfLife.nwk.gz", "Kawahara_2023_Butterflies.nwk.gz", 
-  "Tietje_2023_Seed_plants_TACT.nwk.gz", "Varga_2019_Mushrooms.nwk.gz", "VertLife_Amphibians.nwk.gz", 
-  "VertLife_Birds.nwk.gz", "VertLife_Mammals.nwk.gz", "VertLife_Squamates.nwk.gz")
+tree_files <- c(
 
-if(basename(TREE) %in% curated_trees){
+  ## Curated trees
+  "Ferns_FTOL_1-7-0.nex.gz",
+  "FishTree.nex.gz",
+  "Henriquez-Piskulich_2024_BeetreeOfLife.nex.gz",
+  "Kawahara_2023_Butterflies.nex.gz",
+  "Tietje_2023_Seed_plants_TACT.nex.gz",
+  "Varga_2019_Mushrooms.nex.gz",
+  "VertLife_Amphibians.nex.gz",
+  "VertLife_Birds.nex.gz",
+  "VertLife_Mammals.nex.gz",
+  "VertLife_Squamates.nex.gz",
+  
+  ## Synthetic trees
+  "OTL_Aves-1.3.nex.gz",
+  "OTT_v15.1__Annelida.nex.gz",
+  # "OTT_v15.1__Arthropoda.nex.gz",
+  "OTT_v15.1__Bryophyta.nex.gz",
+  "OTT_v15.1__Chordata.nex.gz",
+  "OTT_v15.1__Cnidaria.nex.gz",
+  "OTT_v15.1__Fungi.nex.gz",
+  "OTT_v15.1__Mollusca.nex.gz",
+  "OTT_v15.1__Nematoda.nex.gz"
+)
+
+
+if(basename(TREE) %in% tree_files){
   cat("...using one of the curated phylogenies\n")
 
   tree_path <- file.path(DATA, "Phylotrees", basename(TREE))
