@@ -198,7 +198,7 @@ workflow {
 
   // Optional input files
   ch_poly   = params.polygon ? Channel.fromPath(params.polygon) : Channel.fromPath("no_polygon", checkIfExists: false)
-  ch_spkeys = params.specieskeys ? Channel.fromPath(params.specieskeys) : Channel.fromPath("no_specieskeys", checkIfExists: false)
+  ch_spnames = params.specieslist ? Channel.fromPath(params.specieslist) : Channel.fromPath("no_specieslist", checkIfExists: false)
 
   // Pipeline data
   ch_data = Channel.fromPath(params.data, type: 'dir', checkIfExists: true)
@@ -207,7 +207,7 @@ workflow {
   // ch_countries_h3 = params.data + "/Countries_H3"
 
   // Subset data
-  subset_data(ch_occ, ch_spkeys, ch_poly, ch_tree)
+  subset_data(ch_occ, ch_spnames, ch_poly, ch_tree)
 
   // Estimate diversity [should be always enabled, as we need Record summaries and Redundancy estimates]
   estimate_diversity(
