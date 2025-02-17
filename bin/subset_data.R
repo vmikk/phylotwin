@@ -452,7 +452,7 @@ if(! is.na(COUNTRY)) {
   country_h3 <- plyr::alply(.data = country_path, .margins = 1, .fun = fread)
   country_h3 <- rbindlist(country_h3)
   
-  cat("..number of grid-cell IDs loaded: ", nrow(country_h3))
+  cat("..number of grid-cell IDs loaded: ", nrow(country_h3), "\n")
 
   COUNTRY_HEXES <- unique(country_h3$h3_cell)
   rm(country_h3)
