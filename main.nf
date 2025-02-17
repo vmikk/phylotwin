@@ -28,7 +28,7 @@ process subset_data {
 
     input:
       path occurrences
-      path specieskeys
+      path specieslist
       path polygon
       val  tree
 
@@ -36,12 +36,12 @@ process subset_data {
       path "aggregated_counts.parquet", emit: occ_counts_long
       path "aggregated_counts.csv",     emit: occ_counts_csv, optional: true
       path "dataset_keys.tsv",          emit: dataset_keys
-      path "phylogenetic_tree.nwk",     emit: phylogenetic_tree
-      // path "species_keys.txt.gz",    emit: species_keys
-      // path "h3_cells.txt.gz",        emit: h3_cells
+      path "phylogenetic_tree.nex",     emit: phylogenetic_tree
+      // path "species_selected.txt.gz",  emit: species_selected
+      // path "h3_cells.txt.gz",          emit: h3_cells
 
     script:
-    def spkeysArg = specieskeys.name != 'no_specieskeys' ? "--specieskeys ${specieskeys}" : ''
+    def spnamesArg = specieslist.name != 'no_specieslist' ? "--specieslist ${specieslist}" : ''
     def polyArg = polygon.name != 'no_polygon' ? "--polygon ${polygon}" : ''
     def csvArg  = params.bd_indices ? "--csv TRUE" : ""
     def duckdbArg = (workflow.containerEngine == 'docker' || workflow.containerEngine == 'singularity') ? '--duckdb_extdir "/usr/local/bin/duckdb_ext"' : ''
@@ -56,7 +56,7 @@ process subset_data {
       --order       ${params.order} \
       --family      ${params.family} \
       --genus       ${params.genus} \
-      ${spkeysArg} \
+      ${spnamesArg} \
       --resolution  ${params.resolution} \
       --country     ${params.country} \
       --latmin      ${params.latmin} \
