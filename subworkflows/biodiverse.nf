@@ -64,7 +64,7 @@ process prep_biodiv {
     ## Latitude = Y, Longitude = X
     
     ## Input occurrence data format:
-    # H3, Latitude, Longitude, specieskey, total_records
+    # H3, Latitude, Longitude, species, total_records
     #  0,    1,         2,         3,           4
 
     echo -e "\n\n---- Preparing occurrence data ----\n\n"
