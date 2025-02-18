@@ -298,8 +298,13 @@ workflow BIODIVERSE {
 
     main:
 
+      // Rename species in tree and occurrences
+      rename_species(occurrences, tree)
+
       // Prepare Biodiverse input files
-      prep_biodiv(occurrences, tree)
+      prep_biodiv(
+        rename_species.out.occ,
+        rename_species.out.tree)
 
       // Channel of randomization chunks
       rnd_ch = Channel.fromList( randomization_chunks )
