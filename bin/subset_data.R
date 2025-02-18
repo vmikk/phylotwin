@@ -407,30 +407,6 @@ if(length(SPECIES_SELECTED) == 0) {
 
 
 ##########################################################
-########################################################## Prepare the phylogenetic tree
-##########################################################
-
-cat("\n\n-------- Preparing the phylogenetic tree --------\n\n")
-
-## Load the tree
-cat("..Loading the phylogenetic tree\n")
-tree <- read.nexus( file.path(DATA, "Phylotrees", TREE) )
-
-## Subset phylogenetic tree to species present in the data
-cat("..Subsetting phylogenetic tree\n")
-tree <- keep.tip(tree, intersect(tree$tip.label, SPECIES_SELECTED))
-
-if(length(tree$tip.label) == 0){
-  cat("ERROR: No species found in the data! Check your taxonomic filters or species keys file.\n", file=stderr())
-  stop()
-}
-
-## Export the tree
-cat("..Exporting the phylogenetic tree\n")
-ape::write.nexus(tree, file = "phylogenetic_tree.nex")
-
-
-##########################################################
 ########################################################## Grid-cell-based filters
 ##########################################################
 # - Country
@@ -787,4 +763,45 @@ if(CSV == TRUE){
   } ## end of no records
 
 }
+
+
+
+##########################################################
+########################################################## Prepare the phylogenetic tree
+##########################################################
+
+cat("\n\n-------- Preparing the phylogenetic tree --------\n\n")
+
+## Load the tree
+cat("..Loading the phylogenetic tree\n")
+tree <- read.nexus( file.path(DATA, "Phylotrees", TREE) )
+
+## Find species from the subsetted species occurrences
+cat("..Finding species from the subsetted species occurrences\n")
+species_subset <- arrow::open_dataset("aggregated_counts.parquet") %>% 
+  select(species) %>% 
+  distinct() %>% 
+  collect() %>% 
+  pull(species) %>% 
+  sort()
+
+cat("...Number of species found in the data: ", length(species_subset), "\n")
+
+## Find species from the subsetted species occurrences
+cat("..Finding species from the subsetted species occurrences\n")
+sp_in_tree <- intersect(tree$tip.label, species_subset)
+cat("...Number of species found in the tree: ", length(sp_in_tree), "\n")
+
+if(length(sp_in_tree) == 0){
+  cat("ERROR: No species found in the data! Check your taxonomic filters or species keys file.\n", file=stderr())
+  stop()
+}
+
+## Subset phylogenetic tree to species present in the data
+cat("..Subsetting phylogenetic tree\n")
+tree <- keep.tip(tree, sp_in_tree)
+
+## Export the tree
+cat("..Exporting the phylogenetic tree\n")
+ape::write.nexus(tree, file = "phylogenetic_tree.nex")
 
