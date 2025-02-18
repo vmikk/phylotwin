@@ -14,6 +14,32 @@ else {
 biodiverse_args = "function=" + params.bd_randname + " max_iters=" + iterations_per_thread
 
 
+// Rename speceies in tree and species occurrence data (to avoid whitespaces and special characters)
+process rename_species {
+
+    label "container_phylotwin"
+
+    input:
+      path occurrences
+      path tree
+
+    output:
+      path "tree_renamed.nex",        emit: tree
+      path "occurrences_renamed.csv", emit: occ
+
+    script:
+    """
+  
+    rename_species.R \
+      --tree               ${tree} \
+      --occurrences        ${occurrences} \
+      --output_tree        tree_renamed.nex \
+      --output_occurrences occurrences_renamed.csv
+
+    """
+}
+
+
 // Create Biodiverse input files
 process prep_biodiv {
 
