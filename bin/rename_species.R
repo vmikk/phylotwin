@@ -101,7 +101,7 @@ SPP <- merge(x = occ, y = SPP, by.x = "species", by.y = "original", all.x = TRUE
 SPP[ , species := NULL ]
 setnames(x = SPP, old = "renamed", new = "species")
 setorder(x = SPP, H3, species)
-
+setcolorder(x = SPP, neworder = c("H3", "Latitude", "Longitude", "species", "total_records"))
 
 ## Export data
 cat("Exporting data\n")
