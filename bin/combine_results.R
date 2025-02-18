@@ -122,6 +122,12 @@ cat("\n\n-------- Preparing spatial data --------\n\n")
 cat("..Preparing H3 polygons\n")
 H3_poly <- h3_to_geo_boundary_sf(RES$H3)
 
+## Break polygons at the anti-meridian/date line (180/-180 degrees)
+cat("..Break antimeridian\n")
+H3_poly <- st_wrap_dateline(
+  x = H3_poly,
+  options = c("WRAPDATELINE=YES", "DATELINEOFFSET=180"),
+  quiet = TRUE)
 
 cat("..Adding diversity estimates to H3 polygons\n")
 vars <- colnames(RES)[! colnames(RES) %in% "H3" ]
