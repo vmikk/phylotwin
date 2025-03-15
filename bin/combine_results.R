@@ -130,7 +130,8 @@ H3_poly <- st_wrap_dateline(
   quiet = TRUE)
 
 cat("..Adding diversity estimates to H3 polygons\n")
-vars <- colnames(RES)[! colnames(RES) %in% "H3" ]
+vars_to_exclude <- c("H3", "MostRangeRestricted", "MostPhylogeneticallyOriginal")
+vars <- colnames(RES)[! colnames(RES) %in% vars_to_exclude]
 H3_poly <- cbind(H3_poly, RES[, ..vars])
 
 cat("..Exporting polygons with divsity estimates in GeoPackage format\n")
