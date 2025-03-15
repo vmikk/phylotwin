@@ -94,8 +94,9 @@ setDTthreads(threads = THREADS)
 ##########################################################
 
 # OCC  <- "aggregated_counts.parquet"
-# TREE <- "Ferns_FTOL_1-7-0.nwk.gz"
+# TREE <- "phylogenetic_tree.nex"
 # DIV  <- "PD,MNTD,SES.PD,RPD,PhyloEndemismWeighted,CANAPE"
+# TOPNSP <- 5
 # RANDOMIZATIONS <- 20
 # THREADS <- 4
 # OUTPUT <- "diversity_estimates"
