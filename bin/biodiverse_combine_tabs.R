@@ -108,6 +108,11 @@ cat("  H3 resolution:",     RESOLUTION, "\n")
 cat("  Output file:",       OUTPUT, "\n")
 
 
+#### For debugging
+# INPDIR <- "."
+# PREFIX <- "RND"
+# RESOLUTION <- 4
+# OUTPUT <- "Biodiverse_results.txt"
 
 
 ##########################################################
