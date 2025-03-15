@@ -37,6 +37,7 @@ option_list <- list(
     make_option(c("-i", "--input"),  type = "character", default = NA, help = "File with aggregated species occurrences (Parquet, long format)"),
     make_option(c("-t", "--tree"),   type = "character", default = NA, help = "Phylogenetic tree (Newick format)"),
     make_option(c("-d", "--div"),    type = "character", default = NA, help = "Diversity metrics (comma-separated list)"),
+    make_option(c("-n", "--topnsp"), type = "integer",   default = 5,  help = "Number of top species to report per grid cell for species originality and range"),
     make_option(c("-o", "--output"), type = "character", default = NA, help = "Output prefix"),
     make_option(c("-r", "--randomizations"), type = "integer", default = 100, help = "Number of randomizations"),
     make_option("--threads",         type = "integer",   default = 4,  help = "Number of CPUs to use")
@@ -69,6 +70,7 @@ if(is.null(opt$div)){ opt$div <- "PD,SES.PD" }
 OCC     <- opt$input
 TREE    <- opt$tree
 DIV     <- opt$div
+TOPNSP  <- opt$topnsp
 RANDOMIZATIONS <- as.integer(opt$randomizations)
 THREADS <- opt$threads
 OUTPUT  <- opt$output
@@ -78,6 +80,7 @@ cat("  Input:", OCC, "\n")
 cat("  Output prefix:", OUTPUT, "\n")
 cat("  Tree:", TREE, "\n")
 cat("  Diversity metrics:", DIV, "\n")
+cat("  Top-N species to report:", TOPNSP, "\n")
 cat("  Number of randomizations:", RANDOMIZATIONS, "\n")
 cat("  Number of threads:", THREADS, "\n")
 
