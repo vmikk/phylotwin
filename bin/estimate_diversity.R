@@ -330,6 +330,58 @@ RES[, Redundancy := ( 1 - (Richness / NumRecords) )]
 
 
 
+##########################################################
+########################################################## Species originality and range
+##########################################################
+
+cat("\n\n-------- Estimating species originalities and ranges --------\n\n")
+
+## Estimate FP index (fair proportion). Sum(FP) = PD
+cat("..Estimating FP index (fair proportion)\n")
+FP <- phyloregion::evol_distinct(tree, type = "fair.proportion")
+FP <- data.table(species = names(FP), FP = FP)
+
+## Estimate the inverse of the range size of each taxon. Sum(RR) = Weighted endemism
+cat("..Estimating the inverse of the range size of each taxon\n")
+RR <- occ[ , .(RangeSize = .N), by = "species" ]
+RR[ , RangeSizeInv := 1 / RangeSize ]
+
+## Combine data
+SPEC <- merge(x = FP, y = RR, by = "species", all = TRUE)
+
+## Export data
+cat("..Exporting species originalities and ranges\n")
+fwrite(x = SPEC, file = "Species_originalities_and_ranges.txt", sep = "\t")
+
+## Report top-N species
+if(!is.na(TOPNSP) && TOPNSP > 0){
+  cat("..Reporting top-", TOPNSP, "species per grid cell\n")
+  
+  ## Add species originalities and ranges to occurrences
+  occ_spec <- merge(x = occ, y = SPEC, by = "species", all.x = TRUE)
+
+  ## FP
+  setorder(occ_spec, H3, -FP)
+  top_fp  <- occ_spec[, head(.SD, TOPNSP), by = "H3", .SDcols = "species"]
+  top_fpm <- top_fp[ , .(MostPhylogeneticallyOriginal = paste0(species, collapse = ", ")), by = "H3" ]
+
+  ## Ranges
+  setorder(occ_spec, H3, -RangeSizeInv)
+  top_rr  <- occ_spec[, head(.SD, TOPNSP), by = "H3", .SDcols = "species"]
+  top_rrm <- top_rr[ , .(MostRangeRestricted = paste0(species, collapse = ", ")), by = "H3" ]
+
+  ## Combine
+  top_sp <- merge(x = top_fpm, y = top_rrm, by = "H3", all = TRUE)
+
+  ## Export originalities and ranges into a separate file
+  # fwrite(x = top_sp, file = "Top_species_per_grid_cell.txt", sep = "\t")
+
+  ## Add top species to diversity estimates
+  cat("..Adding top species to diversity estimates\n")
+  RES <- merge(x = RES, y = top_sp, by = "H3", all.x = TRUE)
+
+}
+
 # Top driving species in phyloregions
 # phyloregion::indicators
 
