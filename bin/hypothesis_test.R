@@ -36,7 +36,8 @@ option_list <- list(
     make_option(c("-o", "--occurrences"),        type = "character", default = NA, help = "Species occurrences (Parquet, long format)"),
     make_option(c("-t", "--tree"),               type = "character", default = NA, help = "Phylogenetic tree (Nexus format)"),
     make_option("--resolution", action="store",  type='integer',     default=4,    help="H3 resolution (e.g., 4)"),
-    make_option(c("-r", "--results"),            type = "character", default = NA, help = "Results prefix")
+    make_option(c("-r", "--results"),            type = "character", default = NA, help = "Results prefix"),
+    make_option("--duckdb_extdir", action="store", default=NA, type='character', help="Path to the DuckDB extensions directory")
 )
 
 ## Parse the command line arguments
@@ -64,12 +65,13 @@ if(opt$resolution < 1 || opt$resolution > 15){ cat("H3 resolution must be betwee
 ## Input parameters
 POLYGONS_REFERENCE <- opt$polygons_reference
 POLYGONS_TEST      <- opt$polygons_test
-# SPLIT_REFERENCE    <- as.logical(opt$splitref)
-# SPLIT_TEST         <- as.logical(opt$splittest)
+# SPLIT_REFERENCE  <- as.logical(opt$splitref)
+# SPLIT_TEST       <- as.logical(opt$splittest)
 OCCURRENCES        <- opt$occurrences
 TREE               <- opt$tree
 RESULTS            <- opt$results
 RESOLUTION         <- opt$resolution
+DUCKDB_EXT_DIR     <- ifelse( is.na(opt$duckdb_extdir), yes = "", no = opt$duckdb_extdir)
 
 cat("\nParameters parsed:\n")
 cat("  Reference polygons:",  POLYGONS_REFERENCE, "\n")
@@ -80,6 +82,8 @@ cat("  Species occurrences:", OCCURRENCES, "\n")
 cat("  Phylogenetic tree:",   TREE, "\n")
 cat("  H3 resolution:",       RESOLUTION, "\n")
 cat("  Results prefix:",      RESULTS, "\n")
+cat("  DuckDB extensions directory:", DUCKDB_EXT_DIR, "\n")
+cat("  Working directory:",   getwd(), "\n")
 
 ##########################################################
 
@@ -92,8 +96,14 @@ cat("  Results prefix:",      RESULTS, "\n")
 # TREE               <- "phylogenetic_tree.nex"
 # RESOLUTION         <- 4
 # RESULTS            <- "tests"
-# Sys.setenv(PATH=paste("~/.nextflow/assets/vmikk/phylotwin/bin", Sys.getenv("PATH"), sep=":"))
 
+## Local
+# Sys.setenv(PATH=paste("~/.nextflow/assets/vmikk/phylotwin/bin", Sys.getenv("PATH"), sep=":"))
+# DUCKDB_EXT_DIR     <- ""
+
+## Docker
+# Sys.setenv(PATH=paste("~/.nextflow/assets/vmikk/phylotwin/bin", Sys.getenv("PATH"), sep=":"))
+# DUCKDB_EXT_DIR <- "/usr/local/bin/duckdb_ext"
 
 
 ##########################################################
@@ -218,7 +228,8 @@ get_h3_cells_from_polygons <- function(poly, h3res = RESOLUTION) {
       "-o", tmp_h3, 
       "-r", h3res, 
       "-a", "experimental", 
-      "-c", "CONTAINMENT_OVERLAPPING"),
+      "-c", "CONTAINMENT_OVERLAPPING",
+      "-e", DUCKDB_EXT_DIR),
     stdout = "", stderr = "",             # output stdout and stderr to R console
     wait = TRUE)
 
