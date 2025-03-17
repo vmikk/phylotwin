@@ -313,3 +313,32 @@ datm[ datm > 0 ] <- 1
 rownames(datm) <- tabw$Geometry
 
 
+
+##########################################################
+########################################################## Diversity estimation
+##########################################################
+
+cat("\n\n-------- Estimating diversity --------\n\n")
+
+## Subset tree to species present in the matrix
+cat("..Subsetting tree to species present in the matrix\n")
+tree <- ape::drop.tip(tree, tip = setdiff(tree$tip.label, colnames(datm)))
+
+cat("..Estimating diversity\n")
+DIV <- data.table(
+    Geometry = rownames(datm),
+    Species  = rowSums(datm),
+    PD       = PhyloMeasures::pd.query(tree = tree, matrix = datm),
+    SES.PD   = PhyloMeasures::pd.query(tree = tree, matrix = datm, standardize = T),
+    PhyloEndemismWeighted = phyloregion::phylo_endemism(x = datm, phy = tree, weighted = TRUE),
+    PhyloEndemismStrict   = phyloregion::phylo_endemism(x = datm, phy = tree, weighted = FALSE)
+    )
+
+DIV[ , PD_proportion := round(PD / DIV[ Geometry == "EntireArea" ]$PD * 100, 2) ]
+
+## Add number of grid cells
+DIV <- merge(DIV, num_grid_cells, by = "Geometry", all.x = TRUE)
+
+## Conservation value (as per Cadotte et al. 2010, doi:10.1111/j.1472-4642.2010.00650.x)
+DIV[ , ConservationValue := PD / NumGridCells ]
+
