@@ -81,6 +81,21 @@ cat("  H3 resolution:",       RESOLUTION, "\n")
 cat("  Results prefix:",      RESULTS, "\n")
 
 ##########################################################
+
+# ## Debugging
+# POLYGONS_REFERENCE <- "poly1.geojson"
+# POLYGONS_TEST      <- "poly2.geojson"
+# # SPLIT_REFERENCE  <- TRUE
+# # SPLIT_TEST       <- TRUE
+# OCCURRENCES        <- "aggregated_counts.parquet"
+# TREE               <- "phylogenetic_tree.nex"
+# RESOLUTION         <- 4
+# RESULTS            <- "tests"
+# Sys.setenv(PATH=paste("~/.nextflow/assets/vmikk/phylotwin/bin", Sys.getenv("PATH"), sep=":"))
+
+
+
+##########################################################
 ########################################################## Load data
 ##########################################################
 
