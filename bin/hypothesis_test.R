@@ -183,3 +183,85 @@ tree <- ape::read.nexus(file = TREE)         # Nexus format
 
 
 
+##########################################################
+########################################################## Get H3 cells of polygons
+##########################################################
+
+cat("\n\n-------- Converting polygons to H3 cells --------\n\n")
+
+## Function to fetch H3 cells from WKT
+get_h3_cells_from_polygons <- function(poly, h3res = RESOLUTION) {
+  # poly  - simple feature collection with polygons
+  # h3res - H3 resolution
+
+  ## Get data in WKT format
+  cat("...converting to WKT format\n")
+  WKT <- st_as_text(poly$geom)
+
+  ## Export to file
+  cat("...exporting WKT to file\n")
+  tmp_wkt <- tempfile(pattern = "polygon_wkt", fileext = ".wkt")
+  fwrite(
+    x = data.table(Polygon = WKT),
+    file = tmp_wkt,
+    sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+
+  ## Get H3 cells that intersect with the polygon
+  cat("...getting H3 cells\n")
+  tmp_h3 <- tempfile(pattern = "polygon_h3", fileext = ".txt")
+  
+  system2(
+    command = system(command = "which wkt_polygon_to_h3_cells.sh", intern = TRUE),
+    args = c(
+      "-i", tmp_wkt, 
+      "-o", tmp_h3, 
+      "-r", h3res, 
+      "-a", "experimental", 
+      "-c", "CONTAINMENT_OVERLAPPING"),
+    stdout = "", stderr = "",             # output stdout and stderr to R console
+    wait = TRUE)
+
+  ## Load the H3 cells
+  hexes <- fread(tmp_h3, header = TRUE, sep = "\t")
+
+  ## Clean up
+  unlink(tmp_wkt)
+  unlink(tmp_h3)
+
+  return(hexes)
+}
+
+
+
+## Get all H3 cells that intersect with the polygon
+cat("..Getting H3 cells from the reference polygons\n")
+
+h3_reference <- get_h3_cells_from_polygons(
+    poly = polygons_reference,
+    h3res = RESOLUTION)
+
+cat("...number of grid-cells from reference polygons: ", nrow(h3_reference), "\n")
+
+
+## Get H3 cells from the test polygons
+cat("..Getting H3 cells from the test polygons\n")
+
+h3_test <- get_h3_cells_from_polygons(
+    poly = polygons_test,
+    h3res = RESOLUTION)
+
+cat("...number of grid-cells from test polygons: ", nrow(h3_test), "\n")
+
+
+cat("\nCounting the number of grid cells\n")
+num_grid_cells <- rowwiseDT(
+  Geometry=, NumGridCells=,
+  "EntireArea", occ %>% select(H3) %>% unique() %>% collect() %>% nrow(),
+  "Reference",  nrow(h3_reference),
+  "Test",       nrow(h3_test))
+
+
+
+
+
+
