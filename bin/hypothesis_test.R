@@ -263,5 +263,38 @@ num_grid_cells <- rowwiseDT(
 
 
 
+##########################################################
+########################################################## Get occurrences per geometry
+##########################################################
+
+cat("\n\n-------- Extracting species occurrences per geometry --------\n\n")
+
+## Load occurrences
+cat("..Reading species occurrences per geometry and summarizing species abundances\n")
+
+occ_glob <- occ %>%
+  group_by(specieskey) %>%
+  summarise(Abundance = sum(total_records)) %>%
+  collect() %>%
+  setDT()
+
+occ_reference <- occ %>% 
+  filter(H3 %in% h3_reference$h3_cell) %>% 
+  group_by(specieskey) %>%
+  summarise(Abundance = sum(total_records)) %>%
+  collect() %>%
+  setDT()
+
+occ_test <- occ %>% 
+  filter(H3 %in% h3_test$h3_cell) %>% 
+  group_by(specieskey) %>%
+  summarise(Abundance = sum(total_records)) %>%
+  collect() %>%
+  setDT()
+
+
+
+
+
 
 
