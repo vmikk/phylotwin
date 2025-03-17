@@ -273,21 +273,21 @@ cat("\n\n-------- Extracting species occurrences per geometry --------\n\n")
 cat("..Reading species occurrences per geometry and summarizing species abundances\n")
 
 occ_glob <- occ %>%
-  group_by(specieskey) %>%
+  group_by(species) %>%
   summarise(Abundance = sum(total_records)) %>%
   collect() %>%
   setDT()
 
 occ_reference <- occ %>% 
   filter(H3 %in% h3_reference$h3_cell) %>% 
-  group_by(specieskey) %>%
+  group_by(species) %>%
   summarise(Abundance = sum(total_records)) %>%
   collect() %>%
   setDT()
 
 occ_test <- occ %>% 
   filter(H3 %in% h3_test$h3_cell) %>% 
-  group_by(specieskey) %>%
+  group_by(species) %>%
   summarise(Abundance = sum(total_records)) %>%
   collect() %>%
   setDT()
