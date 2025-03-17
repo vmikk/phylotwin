@@ -34,7 +34,7 @@ option_list <- list(
     # make_option("--splittest", action="store_true", default=TRUE, help="Treat test polygons separately"),
     make_option(c("-o", "--occurrences"),        type = "character", default = NA, help = "Species occurrences (Parquet, long format)"),
     make_option(c("-t", "--tree"),               type = "character", default = NA, help = "Phylogenetic tree (Nexus format)"),
-    make_option("--resolution", action="store", default=4, type='integer', help="H3 resolution (e.g., 4)"),
+    make_option("--resolution", action="store",  type='integer',     default=4,    help="H3 resolution (e.g., 4)"),
     make_option(c("-r", "--results"),            type = "character", default = NA, help = "Results prefix")
 )
 
@@ -407,4 +407,13 @@ setcolorder(DIV, c(
   "PhyloEndemismWeighted", "PhyloEndemismStrict",
   "ConservationValue"
   ))
+
+## Export results
+cat("..Exporting results\n")
+
+cat("...writing diveristy table\n")
+fwrite(x = DIV, file = paste0(RESULTS, "_diversity.txt"), sep = "\t")
+
+cat("...writing species originalities\n")
+fwrite(x = SPEC, file = paste0(RESULTS, "_species_originalities.txt"), sep = "\t")
 
