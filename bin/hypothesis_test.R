@@ -266,12 +266,20 @@ cat("...number of grid-cells from test polygons: ", nrow(h3_test), "\n")
 
 
 cat("\nCounting the number of grid cells\n")
-num_grid_cells <- rowwiseDT(
-  Geometry=, NumGridCells=,
-  "EntireArea", occ %>% select(H3) %>% unique() %>% collect() %>% nrow(),
-  "Reference",  nrow(h3_reference),
-  "Test",       nrow(h3_test))
 
+# num_grid_cells <- rowwiseDT(   # supported only in newer data.table versions
+#   Geometry=, NumGridCells=,
+#   "EntireArea", occ %>% select(H3) %>% unique() %>% collect() %>% nrow(),
+#   "Reference",  nrow(h3_reference),
+#   "Test",       nrow(h3_test))
+
+num_grid_cells <- data.table(
+  Geometry     = c("EntireArea", "Reference", "Test"),
+  NumGridCells = c(
+    occ %>% select(H3) %>% unique() %>% collect() %>% nrow(),
+    nrow(h3_reference),
+    nrow(h3_test)
+  ))
 
 
 
