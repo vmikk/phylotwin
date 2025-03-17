@@ -390,3 +390,16 @@ DIV <- merge(DIV, num_grid_cells, by = "Geometry", all.x = TRUE)
 ## Conservation value (as per Cadotte et al. 2010, doi:10.1111/j.1472-4642.2010.00650.x)
 DIV[ , ConservationValue := PD / NumGridCells ]
 
+## Add number of "top" species
+DIV <- merge(x = DIV, y = TOPSP, by = "Geometry", all.x = TRUE)
+
+## Reorder columns
+setcolorder(DIV, c(
+  "Geometry",
+  "NumGridCells",
+  "Species",  "N_PhylogeneticallyDistinctSpecies", "N_RangeRestrictedSpecies",
+  "PD", "PD_proportion", "SES.PD",
+  "PhyloEndemismWeighted", "PhyloEndemismStrict",
+  "ConservationValue"
+  ))
+
