@@ -293,8 +293,23 @@ occ_test <- occ %>%
   setDT()
 
 
+## Reshape to wide format
+cat("..Reshaping to wide format\n")
 
+tab <- rbind(
+    data.table(Geometry = "EntireArea", occ_glob),
+    data.table(Geometry = "Reference",  occ_reference),
+    data.table(Geometry = "Test",       occ_test))
 
+tabw <- dcast(
+    data = tab,
+    formula = Geometry ~ species,
+    value.var = "Abundance",
+    fun.aggregate = sum)
 
+## Convert to matrix
+datm <- as.matrix(tabw[ , -1])
+datm[ datm > 0 ] <- 1
+rownames(datm) <- tabw$Geometry
 
 
