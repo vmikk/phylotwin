@@ -344,20 +344,25 @@ rrp <- quantile(x = SPEC$RangeSizeInv, probs = 0.05)
 SPEC[ , TopPhylogeneticallyDistinct := fifelse(FP <= fpp,           "Yes", "No") ]
 SPEC[ , TopRangeRestricted          := fifelse(RangeSizeInv <= rrp, "Yes", "No") ]
 
+SPEC[ , In_EntireArea := TRUE ]
+SPEC[ , In_Reference  := species %in% occ_reference$species ]
+SPEC[ , In_Test       := species %in% occ_test$species ]
+
+
 ## Count number of "top" species per area
 TOPSP <- rbind(
     data.table(
       Geometry = "EntireArea",
-      N_PhylogeneticallyDistinctSpecies = sum(occ_glob$species %in% SPEC[ TopPhylogeneticallyDistinct == "Yes" ]$species),
-      N_RangeRestrictedSpecies          = sum(occ_glob$species %in% SPEC[ TopRangeRestricted          == "Yes" ]$species)),
+      N_PhylogeneticallyDistinctSpecies = sum(SPEC[ TopPhylogeneticallyDistinct %in% "Yes" ]$In_EntireArea),
+      N_RangeRestrictedSpecies          = sum(SPEC[ TopRangeRestricted          %in% "Yes" ]$In_EntireArea)),
     data.table(
       Geometry = "Reference",
-      N_PhylogeneticallyDistinctSpecies = sum(occ_reference$species %in% SPEC[ TopPhylogeneticallyDistinct == "Yes" ]$species),
-      N_RangeRestrictedSpecies          = sum(occ_reference$species %in% SPEC[ TopRangeRestricted          == "Yes" ]$species)),
+      N_PhylogeneticallyDistinctSpecies = sum(SPEC[ TopPhylogeneticallyDistinct %in% "Yes" ]$In_Reference),
+      N_RangeRestrictedSpecies          = sum(SPEC[ TopRangeRestricted          %in% "Yes" ]$In_Reference)),
     data.table(
       Geometry = "Test",
-      N_PhylogeneticallyDistinctSpecies = sum(occ_test$species %in% SPEC[ TopPhylogeneticallyDistinct == "Yes" ]$species),
-      N_RangeRestrictedSpecies          = sum(occ_test$species %in% SPEC[ TopRangeRestricted          == "Yes" ]$species))
+      N_PhylogeneticallyDistinctSpecies = sum(SPEC[ TopPhylogeneticallyDistinct %in% "Yes" ]$In_Test),
+      N_RangeRestrictedSpecies          = sum(SPEC[ TopRangeRestricted          %in% "Yes" ]$In_Test))
 )
 
 
