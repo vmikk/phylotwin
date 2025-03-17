@@ -313,6 +313,54 @@ datm[ datm > 0 ] <- 1
 rownames(datm) <- tabw$Geometry
 
 
+##########################################################
+########################################################## Species originality estimation
+##########################################################
+
+cat("\n\n-------- Estimating species originality --------\n\n")
+
+## Estimate fair proportion index (== FP == ED == Evolutionary distinctiveness)
+cat("..Estimating fair proportion index\n")
+FP <- phyloregion::evol_distinct(tree, type = "fair.proportion")
+FP <- data.table(species = names(FP), FP = FP)
+
+## Estimate the inverse of the range size of each taxon. Sum(RR) = Weighted endemism
+cat("..Estimating the inverse of the range size of each taxon\n")
+RR <- occ %>%
+  group_by(species) %>%
+  summarise(RangeSize = n()) %>%
+  collect() %>%
+  setDT()
+
+RR[ , RangeSizeInv := 1 / RangeSize ]
+
+## Combine data
+SPEC <- merge(x = FP, y = RR, by = "species", all = TRUE)
+
+## Top-N species
+fpp <- quantile(x = SPEC$FP,           probs = 0.05)
+rrp <- quantile(x = SPEC$RangeSizeInv, probs = 0.05)
+
+SPEC[ , TopPhylogeneticallyDistinct := fifelse(FP <= fpp,           "Yes", "No") ]
+SPEC[ , TopRangeRestricted          := fifelse(RangeSizeInv <= rrp, "Yes", "No") ]
+
+## Count number of "top" species per area
+TOPSP <- rbind(
+    data.table(
+      Geometry = "EntireArea",
+      N_PhylogeneticallyDistinctSpecies = sum(occ_glob$species %in% SPEC[ TopPhylogeneticallyDistinct == "Yes" ]$species),
+      N_RangeRestrictedSpecies          = sum(occ_glob$species %in% SPEC[ TopRangeRestricted          == "Yes" ]$species)),
+    data.table(
+      Geometry = "Reference",
+      N_PhylogeneticallyDistinctSpecies = sum(occ_reference$species %in% SPEC[ TopPhylogeneticallyDistinct == "Yes" ]$species),
+      N_RangeRestrictedSpecies          = sum(occ_reference$species %in% SPEC[ TopRangeRestricted          == "Yes" ]$species)),
+    data.table(
+      Geometry = "Test",
+      N_PhylogeneticallyDistinctSpecies = sum(occ_test$species %in% SPEC[ TopPhylogeneticallyDistinct == "Yes" ]$species),
+      N_RangeRestrictedSpecies          = sum(occ_test$species %in% SPEC[ TopRangeRestricted          == "Yes" ]$species))
+)
+
+
 
 ##########################################################
 ########################################################## Diversity estimation
