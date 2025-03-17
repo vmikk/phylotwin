@@ -1,3 +1,4 @@
+#!/usr/bin/env Rscript
 
 cat("Hypothesis testing\n\n")
 
