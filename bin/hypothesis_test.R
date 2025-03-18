@@ -1,11 +1,15 @@
 #!/usr/bin/env Rscript
 
-cat("Hypothesis testing\n\n")
-
 ## TODO:
 # - treat polygons separately (splitref, splittest)
 # - duckdb H3 extensions path
 
+## Output files:
+# - diversity table       (prefix + "_diversity.txt")
+# - species originalities (prefix + "_species_originalities.txt")
+
+
+cat("Hypothesis testing\n\n")
 
 ## Function to load packages
 load_pckg <- function(pkg = "data.table"){
