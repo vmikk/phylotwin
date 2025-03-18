@@ -215,7 +215,7 @@ get_h3_cells_from_polygons <- function(poly, h3res = RESOLUTION) {
 
   ## Export to file
   cat("...exporting WKT to file\n")
-  tmp_wkt <- tempfile(pattern = "polygon_wkt", fileext = ".wkt")
+  tmp_wkt <- tempfile(pattern = "polygon_wkt", fileext = ".wkt", tmpdir = getwd())
   fwrite(
     x = data.table(Polygon = WKT),
     file = tmp_wkt,
@@ -223,7 +223,7 @@ get_h3_cells_from_polygons <- function(poly, h3res = RESOLUTION) {
 
   ## Get H3 cells that intersect with the polygon
   cat("...getting H3 cells\n")
-  tmp_h3 <- tempfile(pattern = "polygon_h3", fileext = ".txt")
+  tmp_h3 <- tempfile(pattern = "polygon_h3", fileext = ".txt", tmpdir = getwd())
   
   system2(
     command = system(command = "which wkt_polygon_to_h3_cells.sh", intern = TRUE),
