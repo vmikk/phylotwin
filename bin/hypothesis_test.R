@@ -463,8 +463,9 @@ DIVN[ , PhyloEndemismWeighted := round(PhyloEndemismWeighted, 2) ]
 DIVN[ , PhyloEndemismStrict   := round(PhyloEndemismStrict, 2) ]
 DIVN[ , ConservationValue     := round(ConservationValue, 2) ]
 
-DIVN[ Geometry %in% "EntireArea", SES.PD := 0 ]
 DIVN[ Geometry %in% "EntireArea", Geometry := "Entire area" ]
+DIVN[ Geometry %in% "EntireArea", SES.PD := NA ]
+DIVN[ Geometry %in% "EntireArea", ConservationValue := NA ]
 
 ## Rename columns
 cat("..Renaming columns\n")
