@@ -5,8 +5,8 @@
 # - duckdb H3 extensions path
 
 ## Output files:
-# - diversity table       (prefix + "_diversity.txt")
-# - species originalities (prefix + "_species_originalities.txt")
+# - diversity table       (prefix + "_diversity.txt", e.g. `HypTest_diversity.txt`)
+# - species originalities (prefix + "_species_originalities.txt", e.g. `HypTest_species_originalities.txt`)
 
 
 cat("Hypothesis testing\n\n")
@@ -99,7 +99,7 @@ cat("  Working directory:",   getwd(), "\n")
 # OCCURRENCES        <- "aggregated_counts.parquet"
 # TREE               <- "phylogenetic_tree.nex"
 # RESOLUTION         <- 4
-# RESULTS            <- "tests"
+# RESULTS            <- "HypTest"
 
 ## Local
 # Sys.setenv(PATH=paste(normalizePath(file.path(Sys.getenv("HOME"), ".nextflow/assets/vmikk/phylotwin/bin")), Sys.getenv("PATH"), sep=":"))
