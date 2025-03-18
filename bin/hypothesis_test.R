@@ -470,52 +470,69 @@ DIVN[ Geometry %in% "EntireArea", ConservationValue := NA ]
 ## Rename columns
 cat("..Renaming columns\n")
 
+setnames(DIVN,
+  old = c("GridCells", "TotalSpecies"),
+  new = c("Grid cells", "Total species"),
+  skip_absent = TRUE)
+
+setnames(DIVN,
+  old = c("PhylogeneticallyDistinctSpecies", "RangeRestrictedSpecies"),
+  new = c("Top phylogenetically distinct species", "Top range-restricted species"),
+  skip_absent = TRUE)
+
+setnames(DIVN,
+  old = c("PD", "PD_proportion", "SES.PD"),
+  new = c("Phylogenetic diversity (PD)", "PD (%)", "SES PD"),
+  skip_absent = TRUE)
+
+setnames(DIVN,
+  old = c("Geometry", "ConservationValue"),
+  new = c("Area", "Conservation value"),
+  skip_absent = TRUE)
+
+setnames(DIVN,
+  old = c("PhyloEndemismWeighted", "PhyloEndemismStrict"),
+  new = c("Weighted phylogenetic endemism", "Strict phylogenetic endemism"),
+  skip_absent = TRUE)
+
+
+
 cat("..Adding variable metadata\n")
 
 ## Create metadata for each column with colors and descriptions
+## In future, other metadata can be added here (e.g., row color, etc.)
 metadata <- list(
-  Geometry = list(
-    color = "#1f77b4",
-    description = "Area."
+  Area = list(
+    description = "Area of analysis."
   ),
-  GridCells = list(
-    color = "#ff7f0e",
+  "Grid cells" = list(
     description = "Number of grid cells in the area."
   ),
-  Species = list(
-    color = "#2ca02c",
+  "Total species" = list(
     description = "Total number of species in the area."
   ),
-  PhylogeneticallyDistinctSpecies = list(
-    color = "#d62728",
+  "Top phylogenetically distinct species" = list(
     description = "Count of the most phylogenetically distinct species (phylogenetic distinctiveness <= 5th percentile)."
   ),
-  RangeRestrictedSpecies = list(
-    color = "#9467bd",
+  "Top range-restricted species" = list(
     description = "Count of the most range-restricted species (range size <= 5th percentile)."
   ),
-  PD = list(
-    color = "#8c564b",
-    description = "Phylogenetic Diversity (PD) metric."
+  "Phylogenetic diversity (PD)" = list(
+    description = "Phylogenetic diversity metric."
   ),
-  PD_proportion = list(
-    color = "#e377c2",
+  "PD (%)" = list(
     description = "Proportion of the total phylogenetic diversity."
   ),
-  SES.PD = list(
-    color = "#7f7f7f",
-    description = "Standardized Effect Size (SES)for PD. Negative values suggest lower diversity than expected (clustering), while positive values indicate higher diversity (overdispersion)."
+  "SES PD" = list(
+    description = "Standardized Effect Size (SES) for PD. Negative values suggest lower diversity than expected (clustering), while positive values indicate higher diversity (overdispersion)."
   ),
-  PhyloEndemismWeighted = list(
-    color = "#bcbd22",
+  "Weighted phylogenetic endemism" = list(
     description = "Weighted phylogenetic endemism measures spatial uniqueness by summing, for each branch at a site, its length multiplied by the inverse of its range."
   ),
-  PhyloEndemismStrict = list(
-    color = "#17becf",
+  "Strict phylogenetic endemism" = list(
     description = "Strict measure of phylogenetic endemism (the total amount of branch length found only in this area)."
   ),
-  ConservationValue = list(
-    color = "#000000",
+  "Conservation value" = list(
     description = "Indicator of the conservation value represented as the average phylogenetic diversity per grid cell, reflecting the spatial concentration of evolutionary history (as per Cadotte et al. 2010)."
   )
 )
