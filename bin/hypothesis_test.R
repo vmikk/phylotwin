@@ -27,6 +27,7 @@ load_pckg("h3")
 load_pckg("PhyloMeasures")
 load_pckg("phyloregion")
 load_pckg("ape")
+load_pckg("jsonlite")
 
 cat("\n Parsing command line arguments\n")
 
@@ -445,4 +446,88 @@ fwrite(x = DIV, file = paste0(RESULTS, "_diversity.txt"), sep = "\t")
 
 cat("...writing species originalities\n")
 fwrite(x = SPEC, file = paste0(RESULTS, "_species_originalities.txt"), sep = "\t")
+
+##########################################################
+########################################################## Beutify the results for web-GUI
+##########################################################
+
+cat("\n\n-------- Beutifying results for web-GUI --------\n\n")
+
+cat("..Formatting results\n")
+
+DIVN <- copy(DIV)
+# DIVN[ , PD          := round(PD, 2) ]
+DIVN[ , PD_proportion := round(PD_proportion, 2) ]
+DIVN[ , SES.PD        := round(SES.PD, 2) ]
+DIVN[ , PhyloEndemismWeighted := round(PhyloEndemismWeighted, 2) ]
+DIVN[ , PhyloEndemismStrict   := round(PhyloEndemismStrict, 2) ]
+DIVN[ , ConservationValue     := round(ConservationValue, 2) ]
+
+DIVN[ Geometry %in% "EntireArea", SES.PD := 0 ]
+DIVN[ Geometry %in% "EntireArea", Geometry := "Entire area" ]
+
+## Rename columns
+cat("..Renaming columns\n")
+
+cat("..Adding variable metadata\n")
+
+## Create metadata for each column with colors and descriptions
+metadata <- list(
+  Geometry = list(
+    color = "#1f77b4",
+    description = "Area."
+  ),
+  GridCells = list(
+    color = "#ff7f0e",
+    description = "Number of grid cells in the area."
+  ),
+  Species = list(
+    color = "#2ca02c",
+    description = "Total number of species in the area."
+  ),
+  PhylogeneticallyDistinctSpecies = list(
+    color = "#d62728",
+    description = "Count of the most phylogenetically distinct species (phylogenetic distinctiveness <= 5th percentile)."
+  ),
+  RangeRestrictedSpecies = list(
+    color = "#9467bd",
+    description = "Count of the most range-restricted species (range size <= 5th percentile)."
+  ),
+  PD = list(
+    color = "#8c564b",
+    description = "Phylogenetic Diversity (PD) metric."
+  ),
+  PD_proportion = list(
+    color = "#e377c2",
+    description = "Proportion of the total phylogenetic diversity."
+  ),
+  SES.PD = list(
+    color = "#7f7f7f",
+    description = "Standardized Effect Size (SES)for PD. Negative values suggest lower diversity than expected (clustering), while positive values indicate higher diversity (overdispersion)."
+  ),
+  PhyloEndemismWeighted = list(
+    color = "#bcbd22",
+    description = "Weighted phylogenetic endemism measures spatial uniqueness by summing, for each branch at a site, its length multiplied by the inverse of its range."
+  ),
+  PhyloEndemismStrict = list(
+    color = "#17becf",
+    description = "Strict measure of phylogenetic endemism (the total amount of branch length found only in this area)."
+  ),
+  ConservationValue = list(
+    color = "#000000",
+    description = "Indicator of the conservation value represented as the average phylogenetic diversity per grid cell, reflecting the spatial concentration of evolutionary history (as per Cadotte et al. 2010)."
+  )
+)
+
+cat("..Beutifying results\n")
+
+## Combine the raw data and metadata into one list
+DIVB <- list(
+  data = DIVN,
+  metadata = metadata
+)
+
+## Convert the output to JSON
+DIVB_json <- toJSON(DIVB, pretty = TRUE, auto_unbox = TRUE)
+write(DIVB_json, file = paste0(RESULTS, "_diversity.json"))
 
