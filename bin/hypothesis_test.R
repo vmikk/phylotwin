@@ -102,11 +102,12 @@ cat("  Working directory:",   getwd(), "\n")
 # RESULTS            <- "tests"
 
 ## Local
-# Sys.setenv(PATH=paste("~/.nextflow/assets/vmikk/phylotwin/bin", Sys.getenv("PATH"), sep=":"))
-# DUCKDB_EXT_DIR     <- ""
+# Sys.setenv(PATH=paste(normalizePath(file.path(Sys.getenv("HOME"), ".nextflow/assets/vmikk/phylotwin/bin")), Sys.getenv("PATH"), sep=":"))
+## Sys.getenv("PATH")
+# DUCKDB_EXT_DIR <- ""
 
 ## Docker
-# Sys.setenv(PATH=paste("~/.nextflow/assets/vmikk/phylotwin/bin", Sys.getenv("PATH"), sep=":"))
+# Sys.setenv(PATH=paste(normalizePath(file.path(Sys.getenv("HOME"), ".nextflow/assets/vmikk/phylotwin/bin")), Sys.getenv("PATH"), sep=":"))
 # DUCKDB_EXT_DIR <- "/usr/local/bin/duckdb_ext"
 
 
@@ -225,15 +226,21 @@ get_h3_cells_from_polygons <- function(poly, h3res = RESOLUTION) {
   cat("...getting H3 cells\n")
   tmp_h3 <- tempfile(pattern = "polygon_h3", fileext = ".txt", tmpdir = getwd())
   
-  system2(
-    command = system(command = "which wkt_polygon_to_h3_cells.sh", intern = TRUE),
-    args = c(
+  ## Arguments for the script
+  ARGS <- c(
       "-i", tmp_wkt, 
       "-o", tmp_h3, 
       "-r", h3res, 
       "-a", "experimental", 
-      "-c", "CONTAINMENT_OVERLAPPING",
-      "-e", DUCKDB_EXT_DIR),
+      "-c", "CONTAINMENT_OVERLAPPING")
+  
+  if(DUCKDB_EXT_DIR != ""){
+    ARGS <- c(ARGS, "-e", DUCKDB_EXT_DIR)
+  }
+
+  system2(
+    command = system(command = "which wkt_polygon_to_h3_cells.sh", intern = TRUE),
+    args = ARGS,
     stdout = "", stderr = "",             # output stdout and stderr to R console
     wait = TRUE)
 
