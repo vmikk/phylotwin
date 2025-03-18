@@ -279,14 +279,14 @@ cat("...number of grid-cells from test polygons: ", nrow(h3_test), "\n")
 cat("\nCounting the number of grid cells\n")
 
 # num_grid_cells <- rowwiseDT(   # supported only in newer data.table versions
-#   Geometry=, NumGridCells=,
+#   Geometry=, GridCells=,
 #   "EntireArea", occ %>% select(H3) %>% unique() %>% collect() %>% nrow(),
 #   "Reference",  nrow(h3_reference),
 #   "Test",       nrow(h3_test))
 
 num_grid_cells <- data.table(
   Geometry     = c("EntireArea", "Reference", "Test"),
-  NumGridCells = c(
+  GridCells    = c(
     occ %>% select(H3) %>% unique() %>% collect() %>% nrow(),
     nrow(h3_reference),
     nrow(h3_test)
@@ -382,16 +382,16 @@ SPEC[ , In_Test       := species %in% occ_test$species ]
 TOPSP <- rbind(
     data.table(
       Geometry = "EntireArea",
-      N_PhylogeneticallyDistinctSpecies = sum(SPEC[ TopPhylogeneticallyDistinct %in% "Yes" ]$In_EntireArea),
-      N_RangeRestrictedSpecies          = sum(SPEC[ TopRangeRestricted          %in% "Yes" ]$In_EntireArea)),
+      PhylogeneticallyDistinctSpecies = sum(SPEC[ TopPhylogeneticallyDistinct %in% "Yes" ]$In_EntireArea),
+      RangeRestrictedSpecies          = sum(SPEC[ TopRangeRestricted          %in% "Yes" ]$In_EntireArea)),
     data.table(
       Geometry = "Reference",
-      N_PhylogeneticallyDistinctSpecies = sum(SPEC[ TopPhylogeneticallyDistinct %in% "Yes" ]$In_Reference),
-      N_RangeRestrictedSpecies          = sum(SPEC[ TopRangeRestricted          %in% "Yes" ]$In_Reference)),
+      PhylogeneticallyDistinctSpecies = sum(SPEC[ TopPhylogeneticallyDistinct %in% "Yes" ]$In_Reference),
+      RangeRestrictedSpecies          = sum(SPEC[ TopRangeRestricted          %in% "Yes" ]$In_Reference)),
     data.table(
       Geometry = "Test",
-      N_PhylogeneticallyDistinctSpecies = sum(SPEC[ TopPhylogeneticallyDistinct %in% "Yes" ]$In_Test),
-      N_RangeRestrictedSpecies          = sum(SPEC[ TopRangeRestricted          %in% "Yes" ]$In_Test))
+      PhylogeneticallyDistinctSpecies = sum(SPEC[ TopPhylogeneticallyDistinct %in% "Yes" ]$In_Test),
+      RangeRestrictedSpecies          = sum(SPEC[ TopRangeRestricted          %in% "Yes" ]$In_Test))
 )
 
 
@@ -408,10 +408,10 @@ tree <- ape::drop.tip(tree, tip = setdiff(tree$tip.label, colnames(datm)))
 
 cat("..Estimating diversity\n")
 DIV <- data.table(
-    Geometry = rownames(datm),
-    Species  = rowSums(datm),
-    PD       = PhyloMeasures::pd.query(tree = tree, matrix = datm),
-    SES.PD   = PhyloMeasures::pd.query(tree = tree, matrix = datm, standardize = T),
+    Geometry              = rownames(datm),
+    TotalSpecies          = rowSums(datm),
+    PD                    = PhyloMeasures::pd.query(tree = tree, matrix = datm),
+    SES.PD                = PhyloMeasures::pd.query(tree = tree, matrix = datm, standardize = T),
     PhyloEndemismWeighted = phyloregion::phylo_endemism(x = datm, phy = tree, weighted = TRUE),
     PhyloEndemismStrict   = phyloregion::phylo_endemism(x = datm, phy = tree, weighted = FALSE)
     )
@@ -422,7 +422,7 @@ DIV[ , PD_proportion := round(PD / DIV[ Geometry == "EntireArea" ]$PD * 100, 2) 
 DIV <- merge(DIV, num_grid_cells, by = "Geometry", all.x = TRUE)
 
 ## Conservation value (as per Cadotte et al. 2010, doi:10.1111/j.1472-4642.2010.00650.x)
-DIV[ , ConservationValue := PD / NumGridCells ]
+DIV[ , ConservationValue := PD / GridCells ]
 
 ## Add number of "top" species
 DIV <- merge(x = DIV, y = TOPSP, by = "Geometry", all.x = TRUE)
@@ -430,8 +430,8 @@ DIV <- merge(x = DIV, y = TOPSP, by = "Geometry", all.x = TRUE)
 ## Reorder columns
 setcolorder(DIV, c(
   "Geometry",
-  "NumGridCells",
-  "Species",  "N_PhylogeneticallyDistinctSpecies", "N_RangeRestrictedSpecies",
+  "GridCells",
+  "TotalSpecies", "PhylogeneticallyDistinctSpecies", "RangeRestrictedSpecies",
   "PD", "PD_proportion", "SES.PD",
   "PhyloEndemismWeighted", "PhyloEndemismStrict",
   "ConservationValue"
