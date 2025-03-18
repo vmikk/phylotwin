@@ -356,17 +356,15 @@ RR <- occ %>%
   collect() %>%
   setDT()
 
-RR[ , RangeSizeInv := 1 / RangeSize ]
-
 ## Combine data
 SPEC <- merge(x = FP, y = RR, by = "species", all = TRUE)
 
 ## Top-N species
-fpp <- quantile(x = SPEC$FP,           probs = 0.05)
-rrp <- quantile(x = SPEC$RangeSizeInv, probs = 0.05)
+fpp <- quantile(x = SPEC$FP,        probs = 0.05)
+rrp <- quantile(x = SPEC$RangeSize, probs = 0.05)
 
-SPEC[ , TopPhylogeneticallyDistinct := fifelse(FP <= fpp,           "Yes", "No") ]
-SPEC[ , TopRangeRestricted          := fifelse(RangeSizeInv <= rrp, "Yes", "No") ]
+SPEC[ , TopPhylogeneticallyDistinct := fifelse(FP <= fpp,        "Yes", "No") ]
+SPEC[ , TopRangeRestricted          := fifelse(RangeSize <= rrp, "Yes", "No") ]
 
 SPEC[ , In_EntireArea := TRUE ]
 SPEC[ , In_Reference  := species %in% occ_reference$species ]
