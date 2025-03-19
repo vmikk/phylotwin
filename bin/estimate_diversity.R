@@ -61,6 +61,7 @@ opt <- lapply(X = opt, FUN = to_na)
 if(is.na(opt$input)) { cat("Input is not specified.\n", file=stderr()); stop() }
 if(is.na(opt$output)){ cat("Output is not specified.\n", file=stderr()); stop() }
 if(is.na(opt$tree))  { cat("No phylogenetic tree specified.\n", file=stderr()); stop() }
+if(!is.na(opt$topnsp) && opt$topnsp < 0){ cat("Number of top species to report per grid cell for species originality and range must be positive.\n", file=stderr()); stop() }
 
 ## Default diversity metrics
 if(is.null(opt$div)){ opt$div <- "PD,SES.PD" }
