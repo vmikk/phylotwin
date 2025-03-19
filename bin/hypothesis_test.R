@@ -368,10 +368,10 @@ RR <- occ %>%
 SPEC <- merge(x = FP, y = RR, by = "species", all = TRUE)
 
 ## Top-N species
-fpp <- quantile(x = SPEC$FP,        probs = 0.05)
-rrp <- quantile(x = SPEC$RangeSize, probs = 0.05)
+fpp <- quantile(x = SPEC$FP,        probs = 0.95)  # highly phylogenetically distinct
+rrp <- quantile(x = SPEC$RangeSize, probs = 0.05)  # very range-restricted
 
-SPEC[ , TopPhylogeneticallyDistinct := fifelse(FP <= fpp,        "Yes", "No") ]
+SPEC[ , TopPhylogeneticallyDistinct := fifelse(FP >= fpp,        "Yes", "No") ]
 SPEC[ , TopRangeRestricted          := fifelse(RangeSize <= rrp, "Yes", "No") ]
 
 SPEC[ , In_EntireArea := TRUE ]
