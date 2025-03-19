@@ -80,6 +80,8 @@ process estimate_diversity {
 
     label "container_phylotwin"
 
+    publishDir OUTDIR_2_DIV, pattern: "*.txt", mode: "${params.publish_dir_mode}", overwrite: true
+
     // Code `99` is used to indicate that no species occurrences were found with the specified filters
     errorStrategy { task.exitStatus == 99 ? 'ignore' : 'retry' }
 
@@ -88,7 +90,9 @@ process estimate_diversity {
       path tree
 
     output:
-      path "estimate_diversity_results.qs", emit: qs, optional: true
+      path "estimate_diversity_results.qs",        emit: qs,    optional: true
+      path "Species_originalities_and_ranges.txt", emit: origs, optional: true
+      // path "Top_species_per_grid_cell.txt",     emit: topsp, optional: true
 
     script:
     """
