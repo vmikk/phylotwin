@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-title: "PhyloNext2 - the core pipeline for estimating phylogeneic diversity using GBIF-mediated data and OpenTreeOfLife phylogenies"
+title: "PhyloNext v2 backend - the core pipeline for estimating phylogeneic diversity using GBIF-mediated data and OpenTreeOfLife phylogenies"
 type: software
 authors:
 - family-names: "Mikryukov"
@@ -25,7 +25,7 @@ authors:
   given-names: "Urmas"
 - family-names: "Miller"
   given-names: "Joseph T."
-doi: 
+doi: 10.5281/zenodo.14883481
 url: "https://github.com/vmikk/phylotwin"
 repository-code: "https://github.com/vmikk/phylotwin"
 license: MIT
