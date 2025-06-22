@@ -1,0 +1,33 @@
+cff-version: 1.2.0
+title: "PhyloNext2 - the core pipeline for estimating phylogeneic diversity using GBIF-mediated data and OpenTreeOfLife phylogenies"
+type: software
+authors:
+- family-names: "Mikryukov"
+  given-names: "Vladimir"
+  orcid: "https://orcid.org/0000-0003-2786-2690"
+- family-names: "Guldberg Frøslev"
+  given-names: "Tobias"
+- family-names: "Abarenkov"
+  given-names: "Kessy"
+- family-names: "Laffan"
+  given-names: "Shawn"
+- family-names: "Robertson"
+  given-names: "Tim"
+- family-names: "McTavish"
+  given-names: "Emily Jane"
+- family-names: "Jeppesen Stjernegaard"
+  given-names: "Thomas"
+- family-names: "Waller"
+  given-names: "John"
+- family-names: "Blissett"
+  given-names: "Matthew"
+- family-names: "Kõljalg"
+  given-names: "Urmas"
+- family-names: "Miller"
+  given-names: "Joseph T."
+doi: 
+url: "https://github.com/vmikk/phylotwin"
+repository-code: "https://github.com/vmikk/phylotwin"
+license: MIT
+version: 0.6.0
+date-released: 2025-03-19
